@@ -1,0 +1,3 @@
+/home/parto/Downloads/Hex2bin-2.4/t/CMakeFiles/rebuild_cache.dir
+/home/parto/Downloads/Hex2bin-2.4/t/CMakeFiles/edit_cache.dir
+/home/parto/Downloads/Hex2bin-2.4/t/CMakeFiles/hex2bin.dir

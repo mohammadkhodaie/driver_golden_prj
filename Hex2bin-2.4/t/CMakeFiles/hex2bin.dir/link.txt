@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/hex2bin.dir/hex2bin.c.o CMakeFiles/hex2bin.dir/common.c.o CMakeFiles/hex2bin.dir/libcrc.c.o CMakeFiles/hex2bin.dir/binary.c.o  -o hex2bin -rdynamic 

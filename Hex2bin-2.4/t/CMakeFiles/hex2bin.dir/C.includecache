@@ -1,0 +1,46 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/parto/Downloads/Hex2bin-2.4/binary.c
+stdint.h
+-
+binary.h
+/home/parto/Downloads/Hex2bin-2.4/binary.h
+
+/home/parto/Downloads/Hex2bin-2.4/binary.h
+
+/home/parto/Downloads/Hex2bin-2.4/common.c
+common.h
+/home/parto/Downloads/Hex2bin-2.4/common.h
+
+/home/parto/Downloads/Hex2bin-2.4/common.h
+stdint.h
+-
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+ctype.h
+-
+binary.h
+/home/parto/Downloads/Hex2bin-2.4/binary.h
+libcrc.h
+/home/parto/Downloads/Hex2bin-2.4/libcrc.h
+
+/home/parto/Downloads/Hex2bin-2.4/hex2bin.c
+common.h
+/home/parto/Downloads/Hex2bin-2.4/common.h
+
+/home/parto/Downloads/Hex2bin-2.4/libcrc.c
+stdint.h
+-
+
+/home/parto/Downloads/Hex2bin-2.4/libcrc.h
+
