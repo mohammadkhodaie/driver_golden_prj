@@ -78,6 +78,7 @@ typedef enum {
     pax8_gnss_8ch_calibrasion,
     pax8_gnss_8ch_monitoring,
     pax2_9361_filter_bank,
+    pax8v7_9361_filter_bank,
     NULL_B
 } daughter_t;
 
@@ -87,6 +88,7 @@ typedef enum {
     pax8_D_K410T,
     pax2_D,
     pax2s6_D,
+    pax8v7_D,
     NULL_D
 } main_board_t;
 

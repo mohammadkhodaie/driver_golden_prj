@@ -687,6 +687,10 @@ void set_board_type(mb_container_type& tester){
         tester.board=pax::usrp::pax8_D_K410T;
         std::cout<<flash_str<<std::endl;
     }
+    else if(!std::memcmp(flash_str.c_str(),"PAX8V7",6)){
+        tester.board=pax::usrp::pax8v7_D;
+        std::cout<<flash_str<<std::endl;
+    }
     else
         std::cout<<"Warning: Unknown carrier board!"<<std::endl;
 
@@ -723,6 +727,11 @@ void chech_incompatible_state(mb_container_type& tester){
             return;
         tester.board = pax::usrp::pax8_D_K410T;
     }break;
+    case pax::usrp::pax8v7_9361_filter_bank :{
+        if(tester.board == pax::usrp::pax8v7_D)
+            return;
+        tester.board = pax::usrp::pax8v7_D;
+    }break;
     case pax::usrp::NULL_B:
         std::cout<<"cant recognize daughter try to guess the type of daughter"<<std::endl<<"WARNING: daughter set to ";
         switch(tester.board){
@@ -741,6 +750,10 @@ void chech_incompatible_state(mb_container_type& tester){
         case pax::usrp::pax8_D_K410T:
             std::cout<<"pax8 kintex 7 410T with 8 AD9361"<<std::endl;
             tester.daughter_b = pax::usrp::pax8_gnss_8ch_monitoring;
+            break;
+        case pax::usrp::pax8v7_D:
+            std::cout<<"pax8 virtex 7 with 4 AD9361"<<std::endl;
+            tester.daughter_b = pax::usrp::pax8v7_9361_filter_bank;
             break;
         case pax::usrp::NULL_D:
             tester.daughter_b = pax::usrp::pax2_9361_filter_bank;
@@ -831,9 +844,16 @@ uint32_t set_daughter_board(mb_container_type& tester){
     {
         tester.daughter_b=pax::usrp::pax8_gnss_4ch;
         std::cout<<"Detected PAX8K7 daughter board with 4 AD9364"<<std::endl;
-    }else if (eeprom_value=="PAX2K7 FILTERBANK"){
+    }
+    else if (eeprom_value=="PAX2K7 FILTERBANK")
+    {
         tester.daughter_b=pax::usrp::pax2_9361_filter_bank;
         std::cout<<"Detected PAX2K7 daughter board with 1 AD9361"<<std::endl;
+    }
+    else if (eeprom_value=="PAX8V7 FILTERBANK")
+    {
+        tester.daughter_b=pax::usrp::pax8v7_9361_filter_bank;
+        std::cout<<"Detected PAX8V7 daughter board with 4 AD9361"<<std::endl;
     }
     else
     {
@@ -1027,15 +1047,15 @@ vec_streamers_t pax_init(mb_container_type& tester,size_t N_STREAM,pax::device_a
     net_work_init(tester,founded_devices,N_STREAM);
     init_time(tester);
     read_fw_and_init(tester);
-    set_board_type(tester);
-    int N_AD936x=set_daughter_board(tester);
+    set_board_type(tester);//
+    int N_AD936x=set_daughter_board(tester);//
     vec_streamers_t streamers ;
     if(N_STREAM != 0){
         init_ad9361(tester,N_AD936x);
         streamers = set_streams( tester,founded_devices, N_STREAM);
     }
     if(!bypass_board_specefic_init)
-        board_specefic_initializing(tester);
+        board_specefic_initializing(tester);//
     return streamers;
 }
 
