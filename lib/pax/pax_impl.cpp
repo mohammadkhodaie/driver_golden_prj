@@ -13,6 +13,8 @@ void pax::usrp::pax_ad9361_client_t::set_interface(pax_iface::sptr _iface){
 }
 void pax::usrp::pax_ad9361_client_t::set_filter_bank(double freq){
     boost::uint32_t band ;
+    if(!flt)
+        return;
     switch (db) {
     case pax2:
         band = get_filter_bank_sw_sky_v1(freq);
@@ -23,12 +25,28 @@ void pax::usrp::pax_ad9361_client_t::set_filter_bank(double freq){
         last_set_freq = freq;
         break;
 
+    #ifdef __HAND_OFF__
+    case pax2s6:
+            flt->set_filter_path_hand_off(freq,false);
+        break;
+    #endif
+    case pax2_9361_filter_bank:
+            flt->set_filter_path_sky_v2(freq,false); // PH
+        break;
+    case pax8v7_9361_filter_bank:
+            flt->set_filter_path_virtex(freq,false);
+        break;
     default:
         break;
     }
 
 
 }
+
+void pax::usrp::pax_ad9361_client_t::set_filter_bank(boost::shared_ptr<filter_bank> filter){ // PH
+    flt = filter;
+}
+
 
 
 boost::uint32_t pax::usrp::pax_ad9361_client_t::get_filter_bank_sw_sky_v1(double freq){
@@ -68,18 +86,18 @@ double pax::usrp::pax_ad9361_client_t::get_filterbank_edge_sky_v1(filterbank_ban
     default:                return 0;
     }
 }
-void pax::usrp::pax_ad9361_client_t::set_addidtional_register(frequency_band_t band , uint8_t wich_ad9361){
+void pax::usrp::pax_ad9361_client_t::set_addidtional_register(frequency_band_t band , uint8_t which_ad9361){
     switch(db){
     case pax8 :
         switch (band) {
         case AD9361_RX_BAND0_MAX_LIMIT:
-            iface->poke32(U2_REG_SR_ADDR(PAX8_SR_RX_PORT_ADDR_WICH_IC(wich_ad9361)),3);
+            iface->poke32(U2_REG_SR_ADDR(PAX8_SR_RX_PORT_ADDR_WHICH_IC(which_ad9361)),3);
             break;
         case AD9361_RX_BAND1_MAX_LIMIT:
-            iface->poke32(U2_REG_SR_ADDR(PAX8_SR_RX_PORT_ADDR_WICH_IC(wich_ad9361)),1);
+            iface->poke32(U2_REG_SR_ADDR(PAX8_SR_RX_PORT_ADDR_WHICH_IC(which_ad9361)),1);
             break;
         case AD9361_RX_BAND2_MAX_LIMIT:
-            iface->poke32(U2_REG_SR_ADDR(PAX8_SR_RX_PORT_ADDR_WICH_IC(wich_ad9361)),2);
+            iface->poke32(U2_REG_SR_ADDR(PAX8_SR_RX_PORT_ADDR_WHICH_IC(which_ad9361)),2);
             break;
         case AD9361_TX_BAND0_MAX_LIMIT:
             iface->poke32(U2_REG_SR_ADDR(SR_TX_SW),1);
@@ -133,8 +151,9 @@ pax::usrp::digital_interface_mode_t pax::usrp::pax_ad9361_client_t::get_digital_
     case pax8_gnss_4ch:                 {return AD9361_DDR_FDD_LVDS_1R_1T ;}break;
     case pax8_gnss_8ch:                 {return AD9361_DDR_FDD_LVDS_1R_1T ;}break;
     case pax8_gnss_8ch_calibrasion:     {return AD9361_DDR_FDD_LVDS_1R_1T ;}break;
-    case pax8_gnss_8ch_monitoring:      {return AD9361_DDR_FDD_LVDS_1R_1T ;}break;
+    case pax8_gnss_8ch_monitoring:      {return AD9361_DDR_FDD_LVDS_2R_2T ;}break;
     case pax2_9361_filter_bank:         {return AD9361_DDR_FDD_LVDS_2R_2T ;}break;
+    case pax8v7_9361_filter_bank:       {return AD9361_DDR_FDD_LVDS_2R_2T_Virtex ;}break;
     case NULL_B:                        {return AD9361_UNKOWN;}break;
     default :                           {return AD9361_UNKOWN;}break;
     }
@@ -170,6 +189,12 @@ pax::usrp::digital_interface_delays_t pax::usrp::pax_ad9361_client_t::get_digita
         delays.rx_data_delay = 0x0;
         delays.tx_clk_delay = 0x0;
         delays.tx_data_delay =0x3;
+    }break;
+    case AD9361_DDR_FDD_LVDS_2R_2T_Virtex : {
+        delays.rx_clk_delay = 0x6;//5 //0
+        delays.rx_data_delay = 0x0;//0 //b
+        delays.tx_clk_delay = 0x0;//4 //2
+        delays.tx_data_delay =0x4;//0 //0
     }break;
     default :{
         delays.rx_clk_delay = 0x4;
@@ -500,7 +525,7 @@ void net_work_init(mb_container_type& tester,pax::device_addrs_t& out,int N_STRE
             );
 
     try{    //test fifo ctrl status
-        boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+        boost::this_thread::sleep(boost::posix_time::milliseconds(3));
         tester.fifo_ctrl->peek32(SETTING_REGS_BASE);
         tester.spi_and_wb_iface = tester.fifo_ctrl;
         std::cout<<"INFO: fifo ctrl work fine" << std::endl;
@@ -793,6 +818,9 @@ boost::uint32_t set_num_ad9361(mb_container_type& tester){
     case pax::usrp::pax2_9361_filter_bank:
         tester.N_AD9361=1;
         break;
+    case pax::usrp::pax8v7_9361_filter_bank:
+        tester.N_AD9361=4;
+        break;
     case pax::usrp::NULL_B:
         break;
     default :
@@ -901,14 +929,16 @@ void init_ad9361(mb_container_type& tester,uint32_t N_AD9361){
         tester.iface->poke32(U2_REG_SR_ADDR(SR_LO_EN), 0x1);
     }
 
-    pax::usrp::ad9361_params::sptr client_settings = boost::make_shared<pax::usrp::pax_ad9361_client_t>();
-    client_settings->set_db(tester.daughter_b);
-    client_settings->set_mb(tester.board);
-    client_settings->set_interface(tester.iface);
+
     tester.ad_9361.clear();
 
     for(uint32_t i=0;i<N_AD9361;i++){
-            tester.ad_9361.push_back( pax::usrp::ad9361_ctrl::make_spi(client_settings,tester.spi_and_wb_iface, 1<<i, i, _adf4351));
+        pax::usrp::ad9361_params::sptr client_settings = boost::make_shared<pax::usrp::pax_ad9361_client_t>();
+        client_settings->set_db(tester.daughter_b);
+        client_settings->set_mb(tester.board);
+        client_settings->set_interface(tester.iface);
+
+        tester.ad_9361.push_back( pax::usrp::ad9361_ctrl::make_spi(client_settings,tester.spi_and_wb_iface, 1<<i, i, _adf4351));
     }
 }
 
@@ -930,10 +960,10 @@ void board_specefic_initializing(mb_container_type& tester){
         tester.iface->set_FPGA_devices(pax::XILINX_FPGA::XC7K325T);
         switch (tester.daughter_b){
         case pax::usrp::pax8_gnss_8ch_calibrasion: {
-            tester.sync->do_mcs();
+            tester.sync->do_mcs(); // MultiChipSync = mcs
             for(int i=0;i<8;i++)
-                tester.iface->poke32(U2_REG_SR_ADDR(SR_PHASE_DELAY_VALUE(i)),((1<<31)));
-            tester.sync->GNS_pass_channel();
+                tester.iface->poke32(U2_REG_SR_ADDR(SR_PHASE_DELAY_VALUE(i)),((1<<31)));// not to multiply in 0
+            tester.sync->GNS_pass_channel();// open channel
         }break;
         case pax::usrp::pax8_gnss_8ch :
         case pax::usrp::pax8_gnss_4ch : {
@@ -942,7 +972,7 @@ void board_specefic_initializing(mb_container_type& tester){
                 tester.iface->poke32(U2_REG_SR_ADDR(SR_PHASE_DELAY_VALUE(i)),((1<<31)));
         }break;
         case pax::usrp::pax8:{
-            tester.sync->PAX8K7_rx_cal_mode(false);
+            tester.sync->PAX8K7_rx_cal_mode(false);// calibrasion mode
         } break;
         default:{throw pax::not_implemented_error("not implemented this type of pax8_D_K325T");}break;
         }
@@ -972,6 +1002,17 @@ void board_specefic_initializing(mb_container_type& tester){
         case pax::usrp::pax2: break;
         default : throw pax::not_implemented_error("this daughter board is not implemented");
         }
+    }break;
+    case pax::usrp::pax8v7_D :{
+        tester.iface->set_FPGA_devices(pax::XILINX_FPGA::XC7V690T);
+        tester.sync->do_mcs();
+        for(uint8_t i=0;i<4;i++){
+            tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface,static_cast<pax::filter_bank::filter_bank_interface::FILTER_BANK_INTERFACE>(i)));
+        }
+        for(uint8_t i=0;i<8;i++)
+            tester.iface->poke32(U2_REG_SR_ADDR(SR_PHASE_DELAY_VALUE(i)),((1<<31)));
+        tester.sync->PAX8V7_rx_cal_mode(false);// calibrasion mode
+
     }break;
     default : {
         std::cout<<"no spesefic configuration dedicated";
@@ -1054,8 +1095,14 @@ vec_streamers_t pax_init(mb_container_type& tester,size_t N_STREAM,pax::device_a
         init_ad9361(tester,N_AD936x);
         streamers = set_streams( tester,founded_devices, N_STREAM);
     }
-    if(!bypass_board_specefic_init)
+    if(!bypass_board_specefic_init){
         board_specefic_initializing(tester);//
+        if(!tester.filter_bank.empty()){
+            for(uint8_t k = 0; k < N_AD936x; k++)
+                tester.ad_9361[k]->set_filter_bank(tester.filter_bank[k]);
+            tester.sync->set_filter_bank(tester.filter_bank);
+        }
+    }
     return streamers;
 }
 

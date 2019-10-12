@@ -13,6 +13,9 @@
 #include <string>
 #include <wb_iface.hpp>
 #include <ad9361_ctrl.hpp>
+#include <filter_bank.hpp>
+
+
 namespace pax {
 
 /*!
@@ -52,10 +55,13 @@ public:
 
 
     virtual void PAX8K7_rx_cal_mode(bool state) = 0;
+    virtual void PAX8V7_rx_cal_mode(bool state) = 0;
     virtual std::vector<double> PAX8K7_calibration(double _TEST_FREQ = 1575e6 ,double SAMPLE_RATE = 32e6,bool test_mode = true) = 0;
+    virtual std::vector<double> PAX8V7_calibration(double _TEST_FREQ = 1575e6 ,double SAMPLE_RATE = 32e6,bool test_mode = true) = 0;
     virtual void PAX8K7_set_accuracy_value_of_phase_cal(double val) = 0;
     virtual double PAX8K7_get_accuracy_value_of_phase_cal() = 0;
 
+    virtual void set_filter_bank(std::vector<boost::shared_ptr<filter_bank>> flt) = 0; // PH
 
 
 

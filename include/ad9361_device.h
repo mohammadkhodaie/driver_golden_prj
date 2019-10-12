@@ -31,6 +31,7 @@
 #include "boost/assign.hpp"
 #include "boost/bind.hpp"
 #include "boost/function.hpp"
+//#include <filter_bank.hpp>
 
 namespace pax { namespace usrp {
 
@@ -42,8 +43,8 @@ public:
     enum chain_t { CHAIN_1, CHAIN_2, CHAIN_BOTH };
     enum lo_mode_t {INTERNAL_LO = 0, EXTERNAL_LO = 1};
 
-    ad9361_device_t(ad9361_params::sptr client, ad9361_io::sptr io_iface, uint8_t wich_ad9361, adf4351::sptr ext_synth) :
-        _client_params(client), _io_iface(io_iface), wich_ad9361(wich_ad9361), _ext_synth(ext_synth) {
+    ad9361_device_t(ad9361_params::sptr client, ad9361_io::sptr io_iface, uint8_t which_ad9361, adf4351::sptr ext_synth) :
+        _client_params(client), _io_iface(io_iface), which_ad9361(which_ad9361), _ext_synth(ext_synth) {
 
         /*
          * This Boost.Assign to_container() workaround is necessary because STL containers
@@ -102,7 +103,7 @@ public:
      * internal tune function.
      *
      * After tuning, it runs any appropriate calibrations. */
-    double tune(direction_t direction, const double value);
+    double tune(direction_t direction, const double value, bool set_filter_bank = true);
 
     /* Get the current RX or TX frequency. */
     double get_freq(direction_t direction);
@@ -197,6 +198,9 @@ public:
 
     void swap_iq(direction_t direction,bool state);
 
+
+    void set_filter_bank(boost::shared_ptr<filter_bank> flt); // PH
+
     //Constants
     static const double AD9361_MAX_GAIN;
     static const double AD9361_MAX_CLOCK_RATE;
@@ -235,9 +239,9 @@ private:    //Methods
     double _tune_bbvco(const double rate);
     void _reprogram_gains();
     /* SBM */ // added external/internal versions of _tune_helper
-    double _tune_helper(direction_t direction, const double value);
+    double _tune_helper(direction_t direction, const double value, bool set_filter_bank = true);
     double _tune_helper_ext(direction_t direction, const double value);
-    double _tune_helper_int(direction_t direction, const double value);
+    double _tune_helper_int(direction_t direction, const double value, bool set_filter_bank = true);
     double _setup_rates(const double rate);
     double _get_temperature(const double cal_offset, const double timeout = 0.1);
     void _configure_bb_dc_tracking();
@@ -259,6 +263,7 @@ private:    //Methods
     void _set_filter_lp_tia_sec(direction_t direction, filter_info_base::sptr filter);
 
 private:    //Members
+
     typedef struct {
         boost::uint8_t vcodivs;
         boost::uint8_t inputsel;
@@ -288,7 +293,7 @@ private:    //Members
     //Interfaces
     ad9361_params::sptr _client_params;
     ad9361_io::sptr     _io_iface;
-    uint8_t wich_ad9361;
+    uint8_t which_ad9361;
     adf4351::sptr _ext_synth;
 
     //Intermediate state

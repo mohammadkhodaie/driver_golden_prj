@@ -8,11 +8,36 @@ int main(int argc, char* argv[])
     (void) argv;
 
         mb_container_type tester;
-        std::vector<boost::shared_ptr<pax::transport::sph::recv_packet_streamer> > streamers=pax_init(tester,4);
+        std::vector<boost::shared_ptr<pax::transport::sph::recv_packet_streamer> > streamers=pax_init(tester,2);
 
-        tester.sync->PAX8K7_calibration();
+
+//        tester.iface->poke32(U2_REG_SR_ADDR(1022),0);
+//        tester.iface->poke32(U2_REG_SR_ADDR(1023),65535);
+
+//        while(true){
+//        tester.iface->poke32(U2_REG_SR_ADDR(101),0x0);
+//        boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+//        tester.iface->poke32(U2_REG_SR_ADDR(101),0x1);
+//        boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+
+//}
+
+
+//        while(1){
+//            std::cout << tester.iface->peek32(U2_REG_SR_ADDR(101)) << std::endl;
+//            boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+//        }
+        //tester.sync->PAX8V7_calibration();
         //      tester.iface->poke32(U2_REG_SR_ADDR(100),8); //GO TO 12V
 
+
+        //        typedef enum {low_pass_40MHz=0,low_pass_100MHz,low_pass_250MHz,low_pass_450MHz,low_pass_900MHz,low_pass_2200MHz,low_pass_6000MHz} FILTER_PATH_virtex;
+
+
+//        for(uint8_t j = 0;j < 4;j++)
+//            for(uint8_t w = 0; w < 2; w++)
+//                for(uint8_t k = 0; k < 7; k++)
+//                    tester.filter_bank[j]->set_filter_path_virtex(static_cast<pax::filter_bank::filter_bank_virtex_value::FILTER_PATH_virtex>(k));
 
 //        uint32_t    temp =  tester.iface->peek32(READBACK_BASE + 4*1);
 //        tester.iface->poke32(U2_REG_SR_ADDR(1001),0x1FFF);
@@ -27,18 +52,18 @@ int main(int argc, char* argv[])
 //        }
 
 
-//        tester.iface->poke32(U2_REG_SR_ADDR(101),1); //GO TO 12V
-//        tester.iface->poke32(U2_REG_SR_ADDR(101),2); //GO TO 15V
-//    while(true){
-//        tester.iface->poke32(U2_REG_SR_ADDR(100),0);    //CH SW TO 0
-//        tester.iface->poke32(U2_REG_SR_ADDR(100),1);
-//        tester.iface->poke32(U2_REG_SR_ADDR(100),2);
-//        tester.iface->poke32(U2_REG_SR_ADDR(100),3);
-//        tester.iface->poke32(U2_REG_SR_ADDR(100),4);
-//        tester.iface->poke32(U2_REG_SR_ADDR(100),5);
-//        tester.iface->poke32(U2_REG_SR_ADDR(100),6);
-//        tester.iface->poke32(U2_REG_SR_ADDR(100),7);
-//    }
+        tester.iface->poke32(U2_REG_SR_ADDR(101),1); //GO TO 12V
+        tester.iface->poke32(U2_REG_SR_ADDR(101),2); //GO TO 15V
+    while(true){
+        tester.iface->poke32(U2_REG_SR_ADDR(100),0);    //CH SW TO 0
+        tester.iface->poke32(U2_REG_SR_ADDR(100),1);
+        tester.iface->poke32(U2_REG_SR_ADDR(100),2);
+        tester.iface->poke32(U2_REG_SR_ADDR(100),3);
+        tester.iface->poke32(U2_REG_SR_ADDR(100),4);
+        tester.iface->poke32(U2_REG_SR_ADDR(100),5);
+        tester.iface->poke32(U2_REG_SR_ADDR(100),6);
+        tester.iface->poke32(U2_REG_SR_ADDR(100),7);
+    }
 
 
 //        while(true){
@@ -51,8 +76,10 @@ int main(int argc, char* argv[])
 
 //        tester.gps = pax::gps::make(tester.iface,2);
 //        tester.gps->run();
+//        tester.compass = pax::compass::make(tester.iface,3);
+//        tester.compass->run();
 //    while(true){
-////        std::cout<<"HEADING   "<<tester.compass->get_heading() <<std::endl;
+//        std::cout<<"HEADING   "<<tester.compass->get_heading() <<std::endl;
 //        std::cout<<"LAT   "<<tester.gps->get_lat() <<std::endl;
 //        std::cout<<"LON   "<<tester.gps->get_lon() <<std::endl;
 //        std::cout<<"H   "<<tester.gps->get_GMT_hour() <<std::endl;

@@ -9,7 +9,8 @@
 #include <vector>
 #include <pax_iface.h>
 
-namespace pax { namespace usrp {
+namespace pax {class filter_bank; // PH
+ namespace usrp {
 
 /*!
  * Filter bank band settings
@@ -53,6 +54,7 @@ typedef enum {
     AD9361_DDR_FDD_LVDS_1R_1T,
     AD9361_DDR_FDD_LVCMOS_2R_2T,
     AD9361_DDR_FDD_LVDS_2R_2T,
+    AD9361_DDR_FDD_LVDS_2R_2T_Virtex,
     AD9361_UNKOWN
 
 
@@ -93,6 +95,7 @@ typedef enum {
 } main_board_t;
 
 
+
 class ad9361_params {
 public:
     typedef boost::shared_ptr<ad9361_params> sptr;
@@ -103,8 +106,9 @@ public:
     virtual digital_interface_mode_t get_digital_interface_mode() = 0;
     virtual clocking_mode_t get_clocking_mode() = 0;
     virtual double get_band_edge(frequency_band_t band) = 0;
-    virtual void set_addidtional_register(frequency_band_t band , uint8_t wich_ad9361) = 0;
+    virtual void set_addidtional_register(frequency_band_t band , uint8_t which_ad9361) = 0;
     virtual void set_filter_bank(double band)=0;
+    virtual void set_filter_bank(boost::shared_ptr<filter_bank> filter)=0; // PH
     virtual unsigned int get_switch()=0;
     virtual void set_switch(std::uint32_t sw )=0;
     virtual void set_mb(main_board_t)=0;

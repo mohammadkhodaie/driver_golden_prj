@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
      vec_streamers_t  streamers;
 
      for(uint32_t i=0;i<pax_devices.size();i++){
-        if(pax_devices[i].pax_dev_addr["addr"]=="192.168.10.3"){      //select wich ip you want or you can select
+        if(pax_devices[i].pax_dev_addr["addr"]=="192.168.10.3"){      //select which ip you want or you can select
             tester= pax_devices[i].dev;
             streamers=pax_devices[i].streamers;
         }

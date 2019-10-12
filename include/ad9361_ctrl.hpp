@@ -56,6 +56,8 @@ enum CALIBRATION_MODE
     CALIBRATION_OFF=3
 };
 
+//class PAX_API filter_bank; // PH
+
 class ad9361_ctrl : public boost::noncopyable
 {
 public:
@@ -101,6 +103,8 @@ public:
         return pax::meta_range_t(5e6, ad9361_device_t::AD9361_MAX_CLOCK_RATE); //5 MHz DCM low end
     }
 
+    virtual void set_filter_bank(boost::shared_ptr<filter_bank> flt) = 0; // PH
+
     //! set the filter bandwidth for the frontend's analog low pass
     virtual double set_bw_filter(const std::string &/*which*/, const double /*bw*/) = 0;
 
@@ -120,7 +124,7 @@ public:
     virtual void set_active_chains(bool tx1, bool tx2, bool rx1, bool rx2) = 0;
 
     //! tune the given frontend, return the exact value
-    virtual double tune(const std::string &which, const double value) = 0;
+    virtual double tune(const std::string &which, const double value, bool set_filter_bank = true) = 0;
 
     //! set the DC offset for I and Q manually
     void set_dc_offset(const std::string &, const std::complex<double>)

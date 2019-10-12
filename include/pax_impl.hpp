@@ -37,6 +37,7 @@
 #include <filter_bank.hpp>
 #include <eeprom.hpp>
 #include <spi_wb_iface.hpp>
+#include <filter_bank.hpp>
 
 
 static const size_t DEFAULT_NUM_FRAMES = 32;
@@ -208,18 +209,22 @@ struct mb_container_type{
  * Stream destination programmer
  **********************************************************************/
 namespace pax {namespace usrp {
+
+
 class pax_ad9361_client_t : public ad9361_params {
     boost::uint32_t switchs;
     daughter_t db;
     main_board_t mb;
     digital_interface_mode_t digital_interface_mode;
     pax_iface::sptr iface;
+    boost::shared_ptr<filter_bank> flt;// PH
 public:
     ~pax_ad9361_client_t();
 
     void set_filter_bank(double freq);
+    void set_filter_bank(boost::shared_ptr<filter_bank> filter); // PH
 
-    void set_addidtional_register(frequency_band_t band , uint8_t wich_ad9361);
+    void set_addidtional_register(frequency_band_t band , uint8_t which_ad9361);
     void set_interface(pax_iface::sptr _iface);
     double get_band_edge(frequency_band_t band) ;
     clocking_mode_t get_clocking_mode();

@@ -56,7 +56,16 @@ public:
     virtual void hand_off_filter_bank_init();
 
     virtual void set_filter_path_hand_off(pax::filter_bank::filter_bank_hand_off_value::FILTER_PATH_HAND_OFF in);
+    virtual void set_filter_path_hand_off(float freq ,  bool set_ad9361);
 
+
+    /***********************************************************************
+     * virtex7 method
+     **********************************************************************/
+
+    virtual void virtex_filter_bank_init();
+    virtual void set_filter_path_virtex(pax::filter_bank::filter_bank_virtex_value::FILTER_PATH_virtex in);
+    virtual void set_filter_path_virtex(float freq , bool set_ad9361 = true);
 
 private:
 
@@ -77,7 +86,13 @@ private:
     typedef enum {HAND_OFF_PIN_1=0,HAND_OFF_PIN_2,HAND_OFF_PIN_3,HAND_OFF_PIN_4} HAND_OFF_PIN_NUMBER;
     pax::dict<HAND_OFF_PIN_NUMBER,AD_GPO_NUM> hand_off_filter_pin_map;
 
+    /***********************************************************************
+     * virtex parameter
+     **********************************************************************/
 
+    typedef enum {VADGPO_0=0,VADGPO_1,VADGPO_2,VADGPO_3} VAD_GPO_NUM;
+    typedef enum {VIRTEX_PIN_1=0,VIRTEX_PIN_2,VIRTEX_PIN_3,VIRTEX_PIN_4} VIRTEX_PIN_NUMBER;
+    pax::dict<VIRTEX_PIN_NUMBER,VAD_GPO_NUM> virtex_filter_pin_map;
 
 
 };

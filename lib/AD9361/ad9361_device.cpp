@@ -1428,16 +1428,16 @@ double ad9361_device_t::_tune_helper_ext(direction_t direction, const double val
         /* Set band-specific settings. */
         if ( value < _client_params->get_band_edge(AD9361_RX_BAND0_MAX_LIMIT) ) {
             _regs.inputsel = (_regs.inputsel & 0xC0) | 0x30; // Port C, balanced
-            _client_params->set_addidtional_register(AD9361_RX_BAND0_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_RX_BAND0_MAX_LIMIT,which_ad9361);
         } else if ( value < _client_params->get_band_edge(AD9361_RX_BAND1_MAX_LIMIT) ) {
             _regs.inputsel = (_regs.inputsel & 0xC0) | 0x0C; // Port B, balanced
-            _client_params->set_addidtional_register(AD9361_RX_BAND1_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_RX_BAND1_MAX_LIMIT,which_ad9361);
         } else if (value <= _client_params->get_band_edge(AD9361_RX_BAND2_MAX_LIMIT)) {
             _regs.inputsel = (_regs.inputsel & 0xC0) | 0x03; // Port A, balanced
-            _client_params->set_addidtional_register(AD9361_RX_BAND2_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_RX_BAND2_MAX_LIMIT,which_ad9361);
         } else {
             _regs.inputsel = (_regs.inputsel & 0xC0) | 0x03; // Port A, balanced
-            _client_params->set_addidtional_register(AD9361_RX_BAND2_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_RX_BAND2_MAX_LIMIT,which_ad9361);
         }
 
 
@@ -1460,13 +1460,13 @@ double ad9361_device_t::_tune_helper_ext(direction_t direction, const double val
         /* Set band-specific settings. */
         if (value < _client_params->get_band_edge(AD9361_TX_BAND0_MAX_LIMIT)) {
             _regs.inputsel = _regs.inputsel | 0x40;
-            _client_params->set_addidtional_register(AD9361_TX_BAND0_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_TX_BAND0_MAX_LIMIT,which_ad9361);
         } else if (value <= _client_params->get_band_edge(AD9361_TX_BAND1_MAX_LIMIT)) {
             _regs.inputsel = _regs.inputsel & 0xBF;
-            _client_params->set_addidtional_register(AD9361_TX_BAND1_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_TX_BAND1_MAX_LIMIT,which_ad9361);
         } else {
             _regs.inputsel = _regs.inputsel & 0xBF;
-            _client_params->set_addidtional_register(AD9361_TX_BAND1_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_TX_BAND1_MAX_LIMIT,which_ad9361);
         }
         _io_iface->poke8(0x004, _regs.inputsel);
 
@@ -1480,12 +1480,12 @@ double ad9361_device_t::_tune_helper_ext(direction_t direction, const double val
     }
 }
 
-double ad9361_device_t::_tune_helper(direction_t direction, const double value)
+double ad9361_device_t::_tune_helper(direction_t direction, const double value, bool set_filter_bank)
 {
     if (_use_ext_tx_lo == EXTERNAL_LO)
         return _tune_helper_ext(direction, value);
     else
-        return _tune_helper_int(direction, value);
+        return _tune_helper_int(direction, value, set_filter_bank);
     return -1;
 }
 
@@ -1495,7 +1495,7 @@ double ad9361_device_t::_tune_helper(direction_t direction, const double value)
  *
  * Calculate the VCO settings for the requested frequency, and then either
  * tune the RX or TX VCO. */
-double ad9361_device_t::_tune_helper_int(direction_t direction, const double value)
+double ad9361_device_t::_tune_helper_int(direction_t direction, const double value, bool set_filter_bank)
 {
     /* The RFPLL runs from 6 GHz - 12 GHz */
     const double fref = 80e6;
@@ -1521,7 +1521,9 @@ double ad9361_device_t::_tune_helper_int(direction_t direction, const double val
     double actual_vcorate = fref * (nint + (double) (nfrac) / modulus);
     double actual_lo = actual_vcorate / vcodiv;
 
-    _client_params->set_filter_bank(value);
+    if(set_filter_bank)
+        _client_params->set_filter_bank(value);
+
     if (direction == RX) {
          _req_rx_freq = value;
 
@@ -1529,16 +1531,16 @@ double ad9361_device_t::_tune_helper_int(direction_t direction, const double val
          uint8_t save_reg = _regs.inputsel;
         if (value < _client_params->get_band_edge(AD9361_RX_BAND0_MAX_LIMIT)) {
             _regs.inputsel = (_regs.inputsel & 0xC0) | 0x30; // Port C, balanced
-            _client_params->set_addidtional_register(AD9361_RX_BAND0_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_RX_BAND0_MAX_LIMIT,which_ad9361);
         } else if (value < _client_params->get_band_edge(AD9361_RX_BAND1_MAX_LIMIT)) {
             _regs.inputsel = (_regs.inputsel & 0xC0) | 0x0C; // Port B, balanced
-            _client_params->set_addidtional_register(AD9361_RX_BAND1_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_RX_BAND1_MAX_LIMIT,which_ad9361);
         } else if (value <= _client_params->get_band_edge(AD9361_RX_BAND2_MAX_LIMIT)) {
             _regs.inputsel = (_regs.inputsel & 0xC0) | 0x03; // Port A, balanced
-            _client_params->set_addidtional_register(AD9361_RX_BAND2_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_RX_BAND2_MAX_LIMIT,which_ad9361);
         } else {
             _regs.inputsel = (_regs.inputsel & 0xC0) | 0x03; // Port A, balanced
-            _client_params->set_addidtional_register(AD9361_RX_BAND2_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_RX_BAND2_MAX_LIMIT,which_ad9361);
         }
 
 
@@ -1583,13 +1585,13 @@ double ad9361_device_t::_tune_helper_int(direction_t direction, const double val
         uint8_t save_reg = _regs.inputsel;
         if (value < _client_params->get_band_edge(AD9361_TX_BAND0_MAX_LIMIT)) {
             _regs.inputsel = _regs.inputsel | 0x40;
-            _client_params->set_addidtional_register(AD9361_TX_BAND0_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_TX_BAND0_MAX_LIMIT,which_ad9361);
         } else if ((value <= _client_params->get_band_edge(AD9361_TX_BAND1_MAX_LIMIT))) {
             _regs.inputsel = _regs.inputsel & 0xBF;
-            _client_params->set_addidtional_register(AD9361_TX_BAND1_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_TX_BAND1_MAX_LIMIT,which_ad9361);
         } else {
             _regs.inputsel = _regs.inputsel & 0xBF;
-            _client_params->set_addidtional_register(AD9361_TX_BAND1_MAX_LIMIT,wich_ad9361);
+            _client_params->set_addidtional_register(AD9361_TX_BAND1_MAX_LIMIT,which_ad9361);
         }
         if(save_reg != _regs.inputsel)
             _io_iface->poke8(0x004, _regs.inputsel);
@@ -1880,6 +1882,7 @@ void ad9361_device_t::initialize(lo_mode_t set_lo_mode)
     case AD9361_DDR_FDD_LVDS:
     case AD9361_DDR_FDD_LVDS_1R_1T:
     case AD9361_DDR_FDD_LVDS_2R_2T:
+    case AD9361_DDR_FDD_LVDS_2R_2T_Virtex:
     {
         _io_iface->poke8(0x010, 0xc8 ); // Swap       I&Q on Tx, Swap I&Q on Rx, Toggle frame sync mode, 2R2T timing.
         _io_iface->poke8(0x011, 0x00);
@@ -1898,7 +1901,7 @@ void ad9361_device_t::initialize(lo_mode_t set_lo_mode)
 
     /* Data delay for TX and RX data clocks */
     digital_interface_delays_t timing =
-            _client_params->get_digital_interface_timing(wich_ad9361);
+            _client_params->get_digital_interface_timing(which_ad9361);
     boost::uint8_t rx_delays = ((timing.rx_clk_delay & 0xF) << 4)
             | (timing.rx_data_delay & 0xF);
     boost::uint8_t tx_delays = ((timing.tx_clk_delay & 0xF) << 4)
@@ -2036,6 +2039,7 @@ void ad9361_device_t::initialize(lo_mode_t set_lo_mode)
     case AD9361_DDR_FDD_LVDS:
     case AD9361_DDR_FDD_LVDS_1R_1T:
     case AD9361_DDR_FDD_LVDS_2R_2T:
+    case AD9361_DDR_FDD_LVDS_2R_2T_Virtex:
     {
         _io_iface->poke8(0x012, 0x10);
     } break;
@@ -2183,6 +2187,7 @@ double ad9361_device_t::set_clock_rate(const double req_rate)
         case AD9361_DDR_FDD_LVDS:
         case AD9361_DDR_FDD_LVDS_1R_1T:
         case AD9361_DDR_FDD_LVDS_2R_2T:
+        case AD9361_DDR_FDD_LVDS_2R_2T_Virtex:
         {
             _io_iface->poke8(0x012, 0x10);
         }break;
@@ -2303,7 +2308,7 @@ void ad9361_device_t::set_active_chains(bool tx1, bool tx2, bool rx1, bool rx2)
  * internal tune function.
  *
  * After tuning, it runs any appropriate calibrations. */
-double ad9361_device_t::tune(direction_t direction, const double value)
+double ad9361_device_t::tune(direction_t direction, const double value, bool set_filter_bank)
 {
     boost::lock_guard<boost::recursive_mutex> lock(_mutex);
     double last_cal_freq;
@@ -2332,7 +2337,7 @@ double ad9361_device_t::tune(direction_t direction, const double value)
     }
 
     /* Tune the RF VCO! */
-    double tune_freq = _tune_helper(direction, value);
+    double tune_freq = _tune_helper(direction, value, set_filter_bank);
 
    // std::cout << "rx_lo_mode = " << _use_ext_rx_lo << std::endl;
     /* Run any necessary calibrations / setups */
@@ -2375,6 +2380,11 @@ double ad9361_device_t::tune(direction_t direction, const double value)
 
     return tune_freq;
 }
+
+void ad9361_device_t::set_filter_bank(boost::shared_ptr<filter_bank> flt){ // PH
+    _client_params->set_filter_bank(flt);
+}
+
 
 /* Get the current RX or TX frequency. */
 double ad9361_device_t::get_freq(direction_t direction)

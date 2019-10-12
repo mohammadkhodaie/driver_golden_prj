@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
     (void)argc;
     (void) argv;
     mb_container_type tester;
-    vec_streamers_t streamers=pax_init(tester,2);
+    vec_streamers_t streamers=pax_init(tester,8);
 
 
     // disable clock from ad9361
@@ -19,14 +19,14 @@ int main(int argc, char* argv[])
     double ADSampleRate;
     for(uint32_t i=0;i<tester.ad_9361.size();i++)
     {
-        tester.ad_9361[i]->set_active_chains(false,false,true,false);
+        tester.ad_9361[i]->set_active_chains(false,false,true,true);
         // internal lo (set by default)
-        tester.ad_9361[i]->tune("RX",1000e6);
-        tester.ad_9361[i]->set_agc("RX1",false);
-        tester.ad_9361[i]->set_gain("RX1",10);
-        tester.ad_9361[i]->set_gain("RX2",10);
+        tester.ad_9361[i]->tune("RX",100e6);
+        tester.ad_9361[i]->set_agc("RX1",false); // automatic gain control _ peak to be const
+        tester.ad_9361[i]->set_gain("RX1",30);
+        tester.ad_9361[i]->set_gain("RX2",30);
 
-        ADSampleRate=tester.ad_9361[i]->set_clock_rate(50e6);
+        ADSampleRate=tester.ad_9361[i]->set_clock_rate(40e6);
 
     }
 
@@ -35,12 +35,15 @@ int main(int argc, char* argv[])
     tester.iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0xFF);
 
 
+    tester.sync->PAX8V7_rx_cal_mode(false);
+    //tester.sync->do_mcs();
+    //tester.sync->PAX8V7_calibration(0,0,false);
     std::cout<<"real sample_rate:  "<<ADSampleRate<<std::endl;
 
     for (size_t i=0; i<streamers.size(); i++){
         tester.rx_dsps[i]->set_tick_rate(ADSampleRate);
         tester.rx_dsps[i]->set_link_rate(ADSampleRate);
-        tester.rx_dsps[i]->set_host_rate(2e6);
+        tester.rx_dsps[i]->set_host_rate(1e6);
         tester.rx_dsps[i]->set_freq(-5e6);
     }
 
@@ -78,13 +81,13 @@ int main(int argc, char* argv[])
 
     //tester.rx_dsps[0]->issue_stream_command(stream_cmd);
     //tester.ad_9361[0]->set_clk_mux_parent(1);
-    for (size_t i=0; i<2; i++)
+    for (size_t i=0; i<8; i++)
         tester.rx_dsps[i]->issue_stream_command(stream_cmd);
 
     std::vector<boost::thread*> runners(streamers.size());
     std::vector<recorder::sptr> recorders(streamers.size());
 
-    for (size_t i=0; i<2; i++){
+    for (size_t i=0; i<8 ;i++){
         recorders[i]=recorder::make(streamers[i],i,200000);
         runners[i]=new boost::thread(boost::bind(&recorder::run,recorders[i]));
 

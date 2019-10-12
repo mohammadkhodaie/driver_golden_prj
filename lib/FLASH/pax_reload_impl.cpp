@@ -265,6 +265,7 @@ pax::dict<pax::XILINX_FPGA::Xilinx_Device_t,uint32_t> pax::FPGA_SIZE_STRUCT::mak
     FPGA_size_map[pax::XILINX_FPGA::XC7K325T] = 11443612;
     FPGA_size_map[pax::XILINX_FPGA::XC7K410T] = 15877916;
     FPGA_size_map[pax::XILINX_FPGA::XC6SLX150] = 4220000;
+    FPGA_size_map[pax::XILINX_FPGA::XC7V690T] = 28734812;
     return FPGA_size_map;
 }
 

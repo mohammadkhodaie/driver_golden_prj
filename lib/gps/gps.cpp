@@ -152,8 +152,8 @@ public:
         while(running){
             pax::byte_vector_t data_in(UART_MAX_LEN);
             data_in = iface->read_uart(addr,UART_MAX_LEN);
-//            for(int i=0;i<data_in.size();i++)
-//            std::cout<<(char)data_in[i];
+            //for(int i=0;i<data_in.size();i++)
+            //std::cout<<(char)data_in[i];
             std::string sdata;
             sdata.assign(data_in.begin(),data_in.end());
             boost::replace_all(sdata,"\r","\n");

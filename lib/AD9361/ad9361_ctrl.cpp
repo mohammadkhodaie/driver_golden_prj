@@ -186,7 +186,7 @@ public:
     }
 
     //! tune the given frontend, return the exact value
-    double tune(const std::string &which, const double freq)
+    double tune(const std::string &which, const double freq, bool set_filter_bank = true)
     {
         boost::lock_guard<boost::mutex> lock(_mutex);
 
@@ -196,7 +196,13 @@ public:
         const double value = ad9361_ctrl::get_rf_freq_range().clip(clipped_freq);
 
         ad9361_device_t::direction_t direction = _get_direction_from_antenna(which);
-        return _device.tune(direction, value);
+
+        return _device.tune(direction, value, set_filter_bank);
+    }
+
+
+    void set_filter_bank(boost::shared_ptr<filter_bank> flt){ // PH
+        _device.set_filter_bank(flt);
     }
 
     //! get the current frequency for the given frontend

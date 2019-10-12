@@ -42,10 +42,10 @@ boost::cnv::cstream ccnv;
 
     pax::eeprom::board_info info;
     info.board_mfg.assign("PartoCom Asia Ltd.");            //config
-    info.part.assign("AD9364");                             //config
-    info.product_name.assign("PAXGNS8 Monitorin");          //"PAX2S6 Analog Kit"  "PAXGNS8 Monitorin"
+    info.part.assign("AD9361");                             //config
+    info.product_name.assign("PAX8V7 FILTERBANK");          //"PAX2S6 Analog Kit"  "PAXGNS8 Monitorin"
                                                             //"PAXGNS Analog Kit"  "PAXGNS Analog CAL"
-                                                            //"PAX2K7 FILTERBANK"
+                                                            //"PAX2K7 FILTERBANK"  "PAX8V7 FILTERBANK"
     info.serial.assign(serial_daughter);                     //config
     db->set_info(info);
     db->write_info();
@@ -103,7 +103,7 @@ boost::cnv::cstream ccnv;
 
 
     }  else if (tester.iface->get_flash_type()==pax::flash::BPI_S29GL01GS) {
-        pax::flash_vec_t uid = tester.iface->read_uid_flash();
+        pax::flash_vec_t uid = tester.iface->read_uid_flash();//PH
         pax::uint8_vector_t to_1_byte(5,0);
         for(uint8_t i=0;i<5;i++)
         {
@@ -143,8 +143,8 @@ boost::cnv::cstream ccnv;
         for(uint8_t i=0;i<password.size();i++)
             write_to_flash.push_back(password[i]);
 
-        tester.iface->write_otp_flash(0,write_to_flash,pax::flash::BPI_S29GL01GS_256_WORD_OTP_REG_SEC_1);
-        tester.iface->lock_otp_flash(pax::flash::BPI_S29GL01GS_256_WORD_OTP_REG_SEC_1);
+        tester.iface->write_otp_flash(0,write_to_flash,pax::flash::BPI_S29GL01GS_256_WORD_OTP_REG_SEC_1);//PH
+        tester.iface->lock_otp_flash(pax::flash::BPI_S29GL01GS_256_WORD_OTP_REG_SEC_1);//PH
 
     } else if(tester.iface->get_flash_type()==pax::flash::BPI_28F00AP30){
         std::vector<uint8_t> pp(80,0);
