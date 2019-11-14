@@ -6,8 +6,9 @@
 #include <boost/program_options.hpp>
 
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
+
     //Establish user options
     uint32_t image_addr=(0<<31);
     std::string filepath;

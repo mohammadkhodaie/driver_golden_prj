@@ -5,7 +5,7 @@ int main(int argc, char* argv[])
     (void)argc;
     (void) argv;
 #define _SAMP_FREQ (40e6)
-#define _TUNE_FREQ (300e6)
+#define _TUNE_FREQ (100e6)
 
     mb_container_type tester;
     vec_streamers_t streamers=pax_init(tester,8);
@@ -38,7 +38,8 @@ int main(int argc, char* argv[])
     // enable clock from ad9361
     tester.iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0xff);
 
-    tester.sync->PAX8V7_calibration(_TUNE_FREQ,_SAMP_FREQ,false);//1580.42e6
+    //tester.sync->PAX8V7_calibration(_TUNE_FREQ,_SAMP_FREQ,false);//1580.42e6
+    tester.sync->PAX8K7_calibration(_TUNE_FREQ,_SAMP_FREQ,false);//1580.42e6
 
 
 

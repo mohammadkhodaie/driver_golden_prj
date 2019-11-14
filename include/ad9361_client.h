@@ -106,8 +106,8 @@ public:
     virtual digital_interface_mode_t get_digital_interface_mode() = 0;
     virtual clocking_mode_t get_clocking_mode() = 0;
     virtual double get_band_edge(frequency_band_t band) = 0;
-    virtual void set_addidtional_register(frequency_band_t band , uint8_t which_ad9361) = 0;
-    virtual void set_filter_bank(double band)=0;
+    virtual void set_addidtional_register(frequency_band_t band, uint8_t which_ad9361) = 0;
+    virtual void set_filter_bank(double freq, std::string direction) = 0;
     virtual void set_filter_bank(boost::shared_ptr<filter_bank> filter)=0; // PH
     virtual unsigned int get_switch()=0;
     virtual void set_switch(std::uint32_t sw )=0;

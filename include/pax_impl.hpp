@@ -38,7 +38,7 @@
 #include <eeprom.hpp>
 #include <spi_wb_iface.hpp>
 #include <filter_bank.hpp>
-
+#include <ad9361_device.h>
 
 static const size_t DEFAULT_NUM_FRAMES = 32;
 static const double USRP2_LINK_RATE_BPS = 1000e6/8;
@@ -221,7 +221,7 @@ class pax_ad9361_client_t : public ad9361_params {
 public:
     ~pax_ad9361_client_t();
 
-    void set_filter_bank(double freq);
+    void set_filter_bank(double freq, std::string direction);
     void set_filter_bank(boost::shared_ptr<filter_bank> filter); // PH
 
     void set_addidtional_register(frequency_band_t band , uint8_t which_ad9361);
@@ -236,7 +236,7 @@ public:
     void set_db(daughter_t dboard);
 
 private:
-    double last_set_freq=5.5e9;
+    double last_set_freq=5.5e9; // PH
     double get_filterbank_edge_sky_v1(filterbank_band_t band);
     boost::uint32_t get_filter_bank_sw_sky_v1(double freq);
 };

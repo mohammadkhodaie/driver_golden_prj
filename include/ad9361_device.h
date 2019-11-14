@@ -31,14 +31,13 @@
 #include "boost/assign.hpp"
 #include "boost/bind.hpp"
 #include "boost/function.hpp"
-//#include <filter_bank.hpp>
 
 namespace pax { namespace usrp {
 
 class ad9361_device_t : public boost::noncopyable
 {
 public:
-    enum direction_t { RX, TX };
+    enum direction_t { RX = 0, TX };
     enum gain_mode_t {GAIN_MODE_MANUAL, GAIN_MODE_SLOW_AGC, GAIN_MODE_FAST_AGC};
     enum chain_t { CHAIN_1, CHAIN_2, CHAIN_BOTH };
     enum lo_mode_t {INTERNAL_LO = 0, EXTERNAL_LO = 1};

@@ -28,8 +28,17 @@
 #include <pax_regs.hpp>
 #include <boost/range/algorithm.hpp>
 #include <exception>
+
 namespace pax {
+
 class PAX_API filter_bank_impl : public pax::filter_bank{
+    typedef struct {
+        uint8_t GPOA_CTRL_SW_RX;
+        uint8_t GPOB_ATT_PUP;
+        uint8_t GPOA_FLT_OUTSIDE;
+        uint8_t GPOB_CTRL_SW_TX;
+    }GPO_A_B_STAT;
+
 public:
     /***********************************************************************
  * Structors
@@ -67,6 +76,21 @@ public:
     virtual void set_filter_path_virtex(pax::filter_bank::filter_bank_virtex_value::FILTER_PATH_virtex in);
     virtual void set_filter_path_virtex(float freq , bool set_ad9361 = true);
 
+
+    /***********************************************************************
+     * simulator method
+     **********************************************************************/
+
+    virtual void simulator_filter_bank_init();
+    virtual void set_filter_path_simulator(float freq, std::string direction, bool set_ad9361 = true);
+    virtual void set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_30_6000MHz::sub_flt in);
+    virtual void set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_100_1000MHz::sub_flt in);
+    virtual void set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_500_2500MHz::sub_flt in);
+    virtual void set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_2000_6000MHz::sub_flt in);
+    virtual void set_rx_path_throw_outside_flt(bool throw_outside_amp = false);
+    virtual void do_rx_attenuation(uint8_t value);
+    void _get_direction_from_antenna(const std::string direction);
+
 private:
 
     /***********************************************************************
@@ -94,6 +118,14 @@ private:
     typedef enum {VIRTEX_PIN_1=0,VIRTEX_PIN_2,VIRTEX_PIN_3,VIRTEX_PIN_4} VIRTEX_PIN_NUMBER;
     pax::dict<VIRTEX_PIN_NUMBER,VAD_GPO_NUM> virtex_filter_pin_map;
 
+    /***********************************************************************
+     * simulator parameter
+     **********************************************************************/
+
+    enum { RX = 0, TX } direction_t;
+    static GPO_A_B_STAT sim_flt_status;
+    static spi_config_t conf;
+    static bool have_initiated_simulator;
 
 };
 

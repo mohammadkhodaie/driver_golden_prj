@@ -1522,7 +1522,7 @@ double ad9361_device_t::_tune_helper_int(direction_t direction, const double val
     double actual_lo = actual_vcorate / vcodiv;
 
     if(set_filter_bank)
-        _client_params->set_filter_bank(value);
+        _client_params->set_filter_bank(value, (direction == RX) ? "RX" : "TX");
 
     if (direction == RX) {
          _req_rx_freq = value;
@@ -3264,7 +3264,7 @@ void ad9361_device_t::do_mcs(boost::uint32_t step)
 double ad9361_device_t::tunef(direction_t direction, const double value)
 {
     boost::lock_guard<boost::recursive_mutex> lock(_mutex);
-    double tune_freq = _tune_helper(direction, value);
+    double tune_freq = _tune_helper(direction, value, which_ad9361);
     /* If we were in the FDD state, return it now. */
         _io_iface->poke8(0x014, 0x21);
     return tune_freq;

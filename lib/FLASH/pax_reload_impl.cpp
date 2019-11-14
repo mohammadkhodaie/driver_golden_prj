@@ -145,9 +145,9 @@ bool pax::pax_reload_impl::check_file_size(const std::vector<T>& data_i){
 
 template <typename T>
 pax::pax_reload_impl::sync_word_status_t pax::pax_reload_impl::find_sync_word(const std::vector<T>& data ,boost::uint32_t& detect_location){
-    if (data.size() <= (255 / sizeof(T)))
+    if (data.size() <= (3005 / sizeof(T)))
         return CANT_DETECT_SYNC_WORLD;
-    for(uint32_t i = 0 ; i < (250 / sizeof(T) ) ; i++){
+    for(uint32_t i = 0 ; i < (3000 / sizeof(T) ) ; i++){
         sync_word_status_t status =  check_sync_word(data[i]);
         if(status != CANT_DETECT_SYNC_WORLD){
             detect_location = i;

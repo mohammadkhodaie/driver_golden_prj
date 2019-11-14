@@ -355,7 +355,7 @@ void flash_iface::write_otp_cmd(){
     case flash::SPI_IS25LPxxx:
         _IS25LPxx_write_otp();
         break;
-     case flash::BPI_S29GL01GS:
+    case flash::BPI_S29GL01GS:
         _S29GL01GS_write_otp();
         break;
     default : {throw not_implemented_error("this type of flash not implemented!");}
@@ -422,22 +422,22 @@ void flash_iface::erase_full_cmd(){
 
 
 
-inline void flash_iface::_bpi_write_reg(boost::uint32_t address,boost::uint16_t data){
-    transact_bpi(address,data,USRP2_WRITE_ONE_BPIFLASH_16X);
-}
+//inline void flash_iface::_bpi_write_reg(boost::uint32_t address,boost::uint16_t data){
+//    transact_bpi(address,data,USRP2_WRITE_ONE_BPIFLASH_16X);
+//}
 inline boost::uint32_t flash_iface::_bpi_read_reg(boost::uint32_t address){
     return   transact_bpi(address,address,USRP2_READ_ONE_BPIFLASH_16X);
 }
 
 void flash_iface::_28F00AP30_read(){
     for(uint32_t i=0;i<sample;i++)
-        out_vec.push_back( transact_bpi(addr+i,0,USRP2_READ_ONE_BPIFLASH_16X));
+        out_vec.push_back( _bpi_read_reg(addr+i, 0));//USRP2_READ_ONE_BPIFLASH_16X
 }
 void flash_iface::_28F00AP30_write(){
     if(sample == 1 )
-        transact_bpi(addr,data_16[0].data[0],USRP2_WRITE_ONE_BPIFLASH_16X);
+        _bpi_write_reg(addr,data_16[0].data[0]);//USRP2_WRITE_ONE_BPIFLASH_16X
     else if(sample == 32)
-          transact_bpi_buffer(addr,&data_16[0].data[0],USRP2_WRITE_32_BPIFLASH_16X);
+          _bpi_write_buffer(addr,&data_16[0].data[0]);//USRP2_WRITE_32_BPIFLASH_16X
     else
         throw not_implemented_error("this part is not implemented");
 }
@@ -448,28 +448,28 @@ void flash_iface::_28F00AP30_read_otp(){
     if(addr+sample>8+otp_section_addr_map(save_sec).from){
         throw value_error("evrey section of otp have 8 word");
     }
-    transact_bpi(0x80,0x90,USRP2_READ_ONE_BPIFLASH_16X);
+    _bpi_read_reg(0x80,0x90);//USRP2_READ_ONE_BPIFLASH_16X
     for(uint32_t i = addr ; i<addr+sample;i++)
-        out_vec.push_back(transact_bpi(i,0,USRP2_READ_ONE_BPIFLASH_16X));
+        out_vec.push_back(_bpi_read_reg(i,0));//USRP2_READ_ONE_BPIFLASH_16X
 }
 void flash_iface::_28F00AP30_write_otp(){
     if(addr+sample>8+otp_section_addr_map(save_sec).from){
         throw value_error("evrey section of otp have 8 word");
     }
     for(uint32_t i = 0 ; i<sample;i++){
-        transact_bpi(addr + i,0xc0,USRP2_WRITE_ONE_BPIFLASH_16X);
-        transact_bpi(addr + i,data_8[0].data[i],USRP2_WRITE_ONE_BPIFLASH_16X);
+        _bpi_write_reg(addr + i,0xc0);//USRP2_WRITE_ONE_BPIFLASH_16X
+        _bpi_write_reg(addr + i,data_8[0].data[i]);//USRP2_WRITE_ONE_BPIFLASH_16X
     }
 }
 void flash_iface::_28F00AP30_lock_otp(){
-    transact_bpi(0x89,0xc0,USRP2_WRITE_ONE_BPIFLASH_16X);
-    transact_bpi(0x89,otp_section_to_command_mapper(save_sec),USRP2_WRITE_ONE_BPIFLASH_16X);
+    _bpi_write_reg(0x89,0xc0);//USRP2_WRITE_ONE_BPIFLASH_16X
+    _bpi_write_reg(0x89,otp_section_to_command_mapper(save_sec));//USRP2_WRITE_ONE_BPIFLASH_16X
 }
 
 void flash_iface::_28F00AP30_read_UID(){
-    transact_bpi(0x81,0x90,USRP2_READ_ONE_BPIFLASH_16X);
+    _bpi_read_reg(0x81,0x90);//USRP2_READ_ONE_BPIFLASH_16X
     for(uint8_t i=0;i<4;i++)
-     out_vec.push_back( transact_bpi(0x81+i,0,USRP2_READ_ONE_BPIFLASH_16X));
+     out_vec.push_back( _bpi_read_reg(0x81+i,0));//USRP2_READ_ONE_BPIFLASH_16X
 }
 
 
@@ -604,7 +604,7 @@ bool flash_iface::_S29GL01GS_write_to_buffer(){
                 std::ceil( static_cast<float>(temp[i]) / MAX_NUMBER_OF_BUFFER_IN_BPI_X16_FRIMWARE) ;
 
         for(it_count=start_index;it_count < end_index   ;it_count++){
-            transact_bpif(data_16[it_count].addr,data_16[it_count].data,data_16[it_count].num,USRP2_WRITE_2NBYTE_BPIFLASH_16X);
+            _bpi_write_N2BYTE(data_16[it_count].addr,data_16[it_count].data,data_16[it_count].num);
         }
         _bpi_write_reg(addr_temp+temp[i]-1,0x29);
         if (_S29GL01GS_poll_status(FLASH_OP_WRITE_BUFFER) != Successful)
@@ -689,7 +689,7 @@ void flash_iface::_S29GL01GS_read_uid(){
     _bpi_write_reg(0x555,0x90);
     _bpi_write_reg(0x55,0x98);
     uint16_t data [32] ;
-    transact_bpif(0x82,data,10,USRP2_READ_2NBYTE_BPIFLASH_16X); //0x82
+    _bpi_read_N2BYTE(0x82,data,10); //0x82
 
     for(uint8_t i=0;i<5;i++){
         out_vec.push_back((data[2*i+1]<<8) | (data[2*i]<<0));
@@ -701,7 +701,7 @@ void flash_iface::_S29GL01GS_read(){
     _bpi_write_reg(0x555,0xF0); //reset exis ASO
 
     for(uint32_t i=0;i<data_16.size();i++){
-        transact_bpif(data_16[i].addr,data_16[i].data,data_16[i].num,USRP2_READ_2NBYTE_BPIFLASH_16X);
+        _bpi_read_N2BYTE(data_16[i].addr,data_16[i].data,data_16[i].num);
         for(uint8_t j=0;j<data_16[i].num;j++)
             out_vec.push_back(data_16[i].data[j]);
 
@@ -711,7 +711,7 @@ void flash_iface::_S29GL01GS_read(){
 void flash_iface::_S29GL01GS_read_otp(){
     _S29GL01GS_entry_ssr_mode();
     for(uint32_t i=0;i<data_16.size();i++){
-        transact_bpif(data_16[i].addr,data_16[i].data,data_16[i].num,USRP2_READ_2NBYTE_BPIFLASH_16X);
+        _bpi_read_N2BYTE(data_16[i].addr,data_16[i].data,data_16[i].num);
         for(uint8_t j=0;j<data_16[i].num;j++)
             out_vec.push_back(data_16[i].data[j]);
     }
@@ -738,8 +738,6 @@ void flash_iface::_S29GL01GS_lock_otp(){
         throw pax::value_error("this sectionis not for this flash");
     }
 }
-
-
 
 
 

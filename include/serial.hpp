@@ -27,6 +27,7 @@
 #include <boost/thread.hpp>
 #include <iostream>
 
+
 namespace pax{
 
     typedef std::vector<boost::uint8_t> uint8_vector_t;
@@ -79,8 +80,67 @@ typedef enum {
 
 #define MAX_NUMBER_OF_BUFFER_IN_BPI_X16_FRIMWARE 32
 #define MAX_NUMBER_OF_BUFFER_IN_SPIF_FRIMWARE 64
+#define CFI_WB_BASE 0x0B000
+#define CFI_BASE 250
 
-    class PAX_API flash_iface {
+    class PAX_API cfi_iface{
+    public:
+        void cfi_unlock_and_erase_block(uint32_t addr) {
+            cfi_write_32_bits(0x04000000+addr,0x0);
+            cfi_write_32_bits(0x08000000+addr,0x0);
+            uint32_t temp_data = cfi_read_32_bits(0x0c000004);
+            while((temp_data  &0x80) == 0x0)
+                temp_data = cfi_read_32_bits(0x0c000004);
+        }
+        uint16_t cfi_read_device_ident(uint32_t addr) {
+            return cfi_read_16_bits(0x0e000000 + (addr << 1));
+        }
+        void cfi_read_all_device_ident() {
+            std::cout << "Reading device identifier information\n";
+            uint16_t temp = cfi_read_device_ident( 0x0);
+            std::cout << "\t Manufacturer code:" << temp << std::endl;
+            temp = cfi_read_device_ident( 0x1);
+            std::cout << "\t Device ID code:" << temp << std::endl;
+            temp = cfi_read_device_ident( 0x5);
+            std::cout << "\t RCR:" << temp << std::endl;
+            temp = cfi_read_device_ident( 0x2 + ((128*1024)>>1));
+            std::cout << "\t Block 0 locked?:" << temp << std::endl;
+        }
+        uint16_t cfi_query(uint32_t addr) {
+            return cfi_read_16_bits(0x0e010000 + (addr << 1));
+        }
+        void cfi_queries() {
+            std::cout << "Querying CFI device\n";
+            uint16_t temp = cfi_query( 0x10);
+            std::cout << "\t Query ID string:" << temp << std::endl;
+            temp = cfi_query( 0x13);
+            std::cout << "\t Vendor command set and control interface ID:" << temp << std::endl;
+            temp = cfi_query( 0x27);
+            std::cout << "\t size 2^n:" << temp << std::endl;
+            temp = cfi_query( 0x28);
+            std::cout << "\t device interface code:" << temp << std::endl;
+            temp = cfi_query( 0x2c);
+            std::cout << "\t number of erase block regions:" << temp << std::endl;
+
+        }
+        void cfi_data_write_16bits(uint32_t addr, uint32_t data) {
+            cfi_write_16_bits(addr,data);
+            uint32_t temp_data = cfi_read_32_bits(0x0c000004);
+            while((temp_data  &0x80) == 0x0)
+                temp_data = cfi_read_32_bits(0x0c000004);
+        }
+        void cfi_data_write_32bits(uint32_t addr, uint32_t data) {
+            cfi_data_write_16bits( addr, data>>16);
+            cfi_data_write_16bits( addr+2, data & 0xffff);
+        }
+        virtual void cfi_write_32_bits(uint32_t addr,uint32_t data) = 0;
+        virtual uint32_t cfi_read_32_bits(uint32_t addr) = 0;
+        virtual void cfi_write_16_bits(uint32_t addr,uint32_t data) = 0;
+        virtual uint16_t cfi_read_16_bits(uint32_t addr) = 0;
+        virtual uint8_t cfi_read_8_bits(uint32_t addr) = 0;
+    };
+
+    class PAX_API flash_iface : public cfi_iface{
     public:
         virtual void read_flash(uint32_t _addr,flash_vec_t& out,uint32_t num);
         virtual void write_flash(uint32_t _addr,const flash_vec_t& out);
@@ -100,6 +160,8 @@ typedef enum {
 
         void set_flash_interface (flash::flash_interface_t interface_type);
         flash::flash_interface_t get_flash_interface ();
+
+
     private:
         boost::uint32_t it_count=0;
         typedef enum{
@@ -190,13 +252,17 @@ typedef enum {
         virtual boost::uint16_t transact_bpi_buffer(uint32_t addr, uint16_t* data, usrp2_bpiflash_16x_action_old_t action)=0;
 
 
-
+    public:
+        virtual void _bpi_write_reg(boost::uint32_t address,boost::uint16_t data) = 0;
+        virtual boost::uint32_t _bpi_read_reg(boost::uint32_t address) = 0;
+        virtual boost::uint32_t _bpi_read_reg(boost::uint32_t address, boost::uint16_t data) = 0;
+        virtual void _bpi_write_N2BYTE(uint32_t addr,uint16_t* data,uint8_t n_2byte) = 0;
+        virtual void _bpi_read_N2BYTE(uint32_t addr,uint16_t* data,uint8_t n_2byte) = 0;
+        virtual void _bpi_write_buffer(uint32_t addr,uint16_t* data) = 0;
 
 
     private:
 
-        inline void _bpi_write_reg(boost::uint32_t address,boost::uint16_t data);
-        inline boost::uint32_t _bpi_read_reg(boost::uint32_t address);
 
 
 
@@ -244,6 +310,8 @@ typedef enum {
             FLASH_OP_ERASE
         }_S29GL01GS_operation_mode_t;
 
+
+
         void _S29GL01GS_read();
         void _S29GL01GS_read_otp();
         void _S29GL01GS_write_otp();
@@ -259,8 +327,6 @@ typedef enum {
         bool _S29GL01GS_erase_sector_flash();
         bool _S29GL01GS_chip_erase();
         boost::uint16_t _S29GL01GS_read_status_register();
-
-
 
 
 
@@ -525,6 +591,6 @@ typedef enum {
         virtual std::string read_uart(double timeout) = 0;
     };
 
-} //namespace pax
+  } //namespace pax
 
 #endif /* INCLUDED_PAX_TYPES_SERIAL_HPP */

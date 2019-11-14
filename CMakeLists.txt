@@ -12,11 +12,15 @@ list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake/Modules)
 #PROJECT SET
 ######################################################################
 SET(HAND_OFF false)
+SET(CFI false)
 
 
 
 IF(HAND_OFF)
     ADD_DEFINITIONS(-D__HAND_OFF__)
+ENDIF()
+IF(CFI)
+    ADD_DEFINITIONS(-D__CFI__)
 ENDIF()
 
 

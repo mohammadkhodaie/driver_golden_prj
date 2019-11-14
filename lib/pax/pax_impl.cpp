@@ -11,7 +11,7 @@ pax::usrp::pax_ad9361_client_t::~pax_ad9361_client_t() {}
 void pax::usrp::pax_ad9361_client_t::set_interface(pax_iface::sptr _iface){
     iface= _iface;
 }
-void pax::usrp::pax_ad9361_client_t::set_filter_bank(double freq){
+void pax::usrp::pax_ad9361_client_t::set_filter_bank(double freq, std::string direction){
     boost::uint32_t band ;
     if(!flt)
         return;
@@ -36,10 +36,12 @@ void pax::usrp::pax_ad9361_client_t::set_filter_bank(double freq){
     case pax8v7_9361_filter_bank:
             flt->set_filter_path_virtex(freq,false);
         break;
+    case pax8_gnss_8ch:
+            flt->set_filter_path_simulator(freq, direction,false);
+        break;
     default:
         break;
     }
-
 
 }
 
@@ -515,6 +517,7 @@ void io_impl::recv_pirate_loop(
 }
 
 void net_work_init(mb_container_type& tester,pax::device_addrs_t& out,int N_STREAM){
+
     tester.iface = pax_iface::make(pax::transport::udp_simple::make_connected(
                                        out[0]["addr"], BOOST_STRINGIZE(USRP2_UDP_CTRL_PORT)
             ));
@@ -523,6 +526,8 @@ void net_work_init(mb_container_type& tester,pax::device_addrs_t& out,int N_STRE
     tester.fifo_ctrl = usrp2_fifo_ctrl::make(
                 make_xport( out[0]["addr"], boost::lexical_cast<std::string>(USRP2_UDP_FIFO_CRTL_PORT), out[0], "recv")
             );
+
+    tester.iface->set_fifo_ctrl(tester.fifo_ctrl);
 
     try{    //test fifo ctrl status
         boost::this_thread::sleep(boost::posix_time::milliseconds(3));
@@ -894,15 +899,15 @@ uint32_t set_daughter_board(mb_container_type& tester){
 
 
 void net_work_init(mb_container_type& tester,pax::device_addrs_t& out){
+
     tester.iface = pax_iface::make(pax::transport::udp_simple::make_connected(
                                        out[0]["addr"], BOOST_STRINGIZE(USRP2_UDP_CTRL_PORT)
             ));
     tester.iface->poke32(U2_REG_SR_ADDR(U2_SR_SFC_PORT_REG), USRP2_UDP_FIFO_CRTL_PORT<<16);
-
     tester.fifo_ctrl = usrp2_fifo_ctrl::make(
                 make_xport( out[0]["addr"], boost::lexical_cast<std::string>(USRP2_UDP_FIFO_CRTL_PORT), out[0], "recv")
             );
-
+    tester.iface->set_fifo_ctrl(tester.fifo_ctrl);
 }
 void init_ad9361(mb_container_type& tester,uint32_t N_AD9361){
     ////////////////////////////////////////////////////////////////
@@ -965,7 +970,13 @@ void board_specefic_initializing(mb_container_type& tester){
                 tester.iface->poke32(U2_REG_SR_ADDR(SR_PHASE_DELAY_VALUE(i)),((1<<31)));// not to multiply in 0
             tester.sync->GNS_pass_channel();// open channel
         }break;
-        case pax::usrp::pax8_gnss_8ch :
+        case pax::usrp::pax8_gnss_8ch :{
+            tester.sync->do_mcs();
+            for(int i=0;i<8;i++)
+                tester.iface->poke32(U2_REG_SR_ADDR(SR_PHASE_DELAY_VALUE(i)),((1<<31)));
+            for(uint8_t i=0;i<8;i++)
+                tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface,static_cast<pax::filter_bank::filter_bank_interface::FILTER_BANK_INTERFACE>(i + static_cast<int>(pax::filter_bank::filter_bank_interface::SPI_to_GPO0))));
+        }break;
         case pax::usrp::pax8_gnss_4ch : {
             tester.sync->do_mcs();
             for(int i=0;i<8;i++)
@@ -984,6 +995,8 @@ void board_specefic_initializing(mb_container_type& tester){
             tester.sync->do_mcs();
             for(int i=0;i<8;i++)
                 tester.iface->poke32(U2_REG_SR_ADDR(SR_PHASE_DELAY_VALUE(i)),((1<<31)));
+            for(uint8_t i=0;i<8;i++)
+                tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface,static_cast<pax::filter_bank::filter_bank_interface::FILTER_BANK_INTERFACE>(i + static_cast<int>(pax::filter_bank::filter_bank_interface::SPI_to_GPO0))));
         }break;
         default:{throw pax::not_implemented_error("not implemented this type of pax8_D_K410T");}break;
         }
@@ -1088,21 +1101,23 @@ vec_streamers_t pax_init(mb_container_type& tester,size_t N_STREAM,pax::device_a
     net_work_init(tester,founded_devices,N_STREAM);
     init_time(tester);
     read_fw_and_init(tester);
-    set_board_type(tester);//
-    int N_AD936x=set_daughter_board(tester);//
+    set_board_type(tester);
+
+    int N_AD936x=set_daughter_board(tester);
     vec_streamers_t streamers ;
     if(N_STREAM != 0){
         init_ad9361(tester,N_AD936x);
         streamers = set_streams( tester,founded_devices, N_STREAM);
     }
-    if(!bypass_board_specefic_init){
-        board_specefic_initializing(tester);//
-        if(!tester.filter_bank.empty()){
-            for(uint8_t k = 0; k < N_AD936x; k++)
-                tester.ad_9361[k]->set_filter_bank(tester.filter_bank[k]);
-            tester.sync->set_filter_bank(tester.filter_bank);
+        if(!bypass_board_specefic_init){
+            board_specefic_initializing(tester);//
+            if(!tester.filter_bank.empty() && !tester.ad_9361.empty()){
+                for(uint8_t k = 0; k < N_AD936x; k++)
+                    tester.ad_9361[k]->set_filter_bank(tester.filter_bank[k]);
+                tester.sync->set_filter_bank(tester.filter_bank);
+            }
         }
-    }
+
     return streamers;
 }
 

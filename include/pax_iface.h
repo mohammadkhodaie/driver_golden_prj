@@ -28,6 +28,8 @@
 #include <boost/utility.hpp>
 #include <boost/function.hpp>
 #include <string>
+#include "usrp2_fifo_ctrl.hpp"
+
 /*!
  * The usrp2 interface class:
  * Provides a set of functions to implementation layer.
@@ -82,6 +84,8 @@ public:
     virtual void write_uart(boost::uint16_t addr, const pax::byte_vector_t &buf)=0;
     virtual pax::byte_vector_t read_uart(boost::uint16_t addr, size_t num_bytes)=0;
 
+
+    virtual void set_fifo_ctrl(boost::shared_ptr<usrp2_fifo_ctrl> fifo_ctrl) = 0;
     //motherboard eeprom map structure
     //uhd::usrp::mboard_eeprom_t mb_eeprom;
 };

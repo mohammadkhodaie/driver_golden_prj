@@ -7,6 +7,7 @@ int main(int argc, char* argv[])
 {
     (void)argc;
     (void) argv;
+
     mb_container_type tester;
     vec_streamers_t streamers=pax_init(tester,8);
 

@@ -21,11 +21,27 @@ pax::filter_bank_impl::filter_bank_impl(std::vector<pax::usrp::ad9361_ctrl::sptr
         which_ad9361_ic=2;
     else if(interface_type == filter_bank_interface::AD_9361_3_GPO)
         which_ad9361_ic=3;
+    else if(interface_type == filter_bank_interface::SPI_to_GPO0)
+        which_ad9361_ic=0;
+    else if(interface_type == filter_bank_interface::SPI_to_GPO1)
+        which_ad9361_ic=1;
+    else if(interface_type == filter_bank_interface::SPI_to_GPO2)
+        which_ad9361_ic=2;
+    else if(interface_type == filter_bank_interface::SPI_to_GPO3)
+        which_ad9361_ic=3;
+    else if(interface_type == filter_bank_interface::SPI_to_GPO4)
+        which_ad9361_ic=4;
+    else if(interface_type == filter_bank_interface::SPI_to_GPO5)
+        which_ad9361_ic=5;
+    else if(interface_type == filter_bank_interface::SPI_to_GPO6)
+        which_ad9361_ic=6;
+    else if(interface_type == filter_bank_interface::SPI_to_GPO7)
+        which_ad9361_ic=7;
 
     sky_v2_filter_bank_init();
     virtex_filter_bank_init();
     hand_off_filter_bank_init();
-
+    simulator_filter_bank_init();
 }
 
 
@@ -286,6 +302,197 @@ void pax::filter_bank_impl::set_filter_path_virtex(float freq ,  bool set_ad9361
     }
     if(set_ad9361){
         vAD9361[which_ad9361_ic]->tune("RX",freq, false);
+    }
+}
+
+pax::filter_bank_impl::GPO_A_B_STAT pax::filter_bank_impl::sim_flt_status;
+pax::spi_config_t pax::filter_bank_impl::conf;
+bool pax::filter_bank_impl::have_initiated_simulator = false;
+
+void pax::filter_bank_impl::simulator_filter_bank_init(){
+    if (!have_initiated_simulator){
+        have_initiated_simulator = true;
+        conf.mosi_edge = conf.EDGE_RISE;
+        iface->write_spi((1 << 10), conf, ((1 << 6) << 16) | (0x0A << 8) | 0x24, 24);
+        iface->write_spi((1 << 10), conf, ((1 << 6) << 16) | (0x00 << 8) | 0x00, 24);
+        iface->write_spi((1 << 10), conf, ((1 << 6) << 16) | (0x01 << 8) | 0x00, 24);
+        iface->write_spi((1 << 10), conf, ((1 << 6) << 16) | (0x0C << 8) | 0xFF, 24);
+        iface->write_spi((1 << 10), conf, ((1 << 6) << 16) | (0x0D << 8) | 0xFF, 24);
+        iface->write_spi((1 << 11), conf, ((1 << 6) << 16) | (0x0A << 8) | 0x24, 24);
+        iface->write_spi((1 << 11), conf, ((1 << 6) << 16) | (0x00 << 8) | 0x00, 24);
+        iface->write_spi((1 << 11), conf, ((1 << 6) << 16) | (0x01 << 8) | 0x00, 24);
+        iface->write_spi((1 << 11), conf, ((1 << 6) << 16) | (0x0C << 8) | 0xFF, 24);
+        iface->write_spi((1 << 11), conf, ((1 << 6) << 16) | (0x0D << 8) | 0xFF, 24);
+    }
+    set_rx_path_throw_outside_flt(false);
+    do_rx_attenuation(0);
+}
+
+void pax::filter_bank_impl::set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_30_6000MHz::sub_flt in){
+    std::vector<uint8_t> vec = {0x3, 0x0, 0x1, 0x2, 0xc, 0x8, 0x4};
+
+    switch (which_ad9361_ic) {
+    case 0:
+    case 2:
+        sim_flt_status.GPOA_CTRL_SW_RX &= 0x0f;
+        sim_flt_status.GPOA_CTRL_SW_RX |= vec[static_cast<int>(in)] << 4;
+        break;
+    case 4:
+    case 6:
+        sim_flt_status.GPOA_CTRL_SW_RX &= 0xf0;
+        sim_flt_status.GPOA_CTRL_SW_RX |= vec[static_cast<int>(in)] << 0;
+        break;
+    default:
+        break;
+    }
+
+    iface->write_spi((1 << 10), conf, ((1 << 6) << 16) | (0x12 << 8) | sim_flt_status.GPOA_CTRL_SW_RX, 24);
+}
+
+void pax::filter_bank_impl::set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_100_1000MHz::sub_flt in){
+    std::vector<uint8_t> vec = {0x0, 0x1, 0x2, 0x3};
+    sim_flt_status.GPOB_CTRL_SW_TX &= 0xf3;
+    sim_flt_status.GPOB_CTRL_SW_TX |= vec[static_cast<int>(in)] << 2;
+
+    iface->write_spi((1 << 11), conf, ((1 << 6) << 16) | (0x13 << 8) | sim_flt_status.GPOB_CTRL_SW_TX, 24);
+}
+
+void pax::filter_bank_impl::set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_500_2500MHz::sub_flt in){
+    std::vector<uint8_t> vec = {0x2, 0x1};
+    sim_flt_status.GPOB_CTRL_SW_TX &= 0xfc;
+    sim_flt_status.GPOB_CTRL_SW_TX |= vec[static_cast<int>(in)] << 0;
+
+    iface->write_spi((1 << 11), conf, ((1 << 6) << 16) | (0x13 << 8) | sim_flt_status.GPOB_CTRL_SW_TX, 24);
+}
+
+void pax::filter_bank_impl::set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_2000_6000MHz::sub_flt in){
+    std::vector<uint8_t> vec = {0x1, 0x2};
+    sim_flt_status.GPOB_CTRL_SW_TX &= 0xcf;
+    sim_flt_status.GPOB_CTRL_SW_TX |= vec[static_cast<int>(in)] << 4;
+
+    iface->write_spi((1 << 11), conf, ((1 << 6) << 16) | (0x13 << 8) | sim_flt_status.GPOB_CTRL_SW_TX, 24);
+}
+
+
+void pax::filter_bank_impl::set_filter_path_simulator(float freq, std::string direction, bool set_ad9361){
+    _get_direction_from_antenna(direction);
+
+    if(direction_t == RX){
+        switch (which_ad9361_ic) {
+            case 0:
+            case 2:
+            case 4:
+            case 6:
+                if(freq <= 60e6){
+                    set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_30_6000MHz::low_pass_40MHz);
+                } else if( freq <= 130e6) {
+                    set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_30_6000MHz::low_pass_100MHz);
+                } else if (freq <= 264e6) {
+                    set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_30_6000MHz::low_pass_250MHz);
+                } else if (freq <= 470e6) {
+                    set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_30_6000MHz::low_pass_450MHz);
+                } else if (freq <= 1000e6){
+                    set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_30_6000MHz::low_pass_900MHz);
+                } else if (freq <=2400e6) {
+                    set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_30_6000MHz::low_pass_2200MHz);
+                } else {
+                    set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_30_6000MHz::low_pass_6000MHz);
+                }
+                break;
+            default:
+                break;
+        }
+    }else if(direction_t == TX){
+        switch (which_ad9361_ic) {
+            case 2:
+            case 3:
+                if (freq <= 1000e6) {
+                    set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_500_2500MHz::low_pass_900MHz);
+                } else {
+                    set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_500_2500MHz::low_pass_2200MHz);
+                }
+                break;
+            case 4:
+            case 5:
+                if( freq <= 130e6) {
+                   set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_100_1000MHz::low_pass_100MHz);
+                } else if (freq <= 264e6) {
+                   set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_100_1000MHz::low_pass_250MHz);
+                } else if (freq <= 470e6) {
+                   set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_100_1000MHz::low_pass_450MHz);
+                } else {
+                   set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_100_1000MHz::low_pass_900MHz);
+                }
+                break;
+            case 6:
+            case 7:
+                if (freq <= 1000e6) {
+                    set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_2000_6000MHz::low_pass_900MHz);
+                } else {
+                    set_sub_filter_path_simulator(filter_bank_sim_value::FILTER_PATH_2000_6000MHz::low_pass_2200MHz);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    if(set_ad9361){
+        vAD9361[which_ad9361_ic]->tune(direction,freq, false);
+    }
+}
+
+
+void pax::filter_bank_impl::_get_direction_from_antenna(const std::string direction)
+{
+    std::string sub = direction.substr(0, 2);
+    if (sub == "RX") {
+        direction_t = RX;
+    } else if (sub == "TX") {
+        direction_t = TX;
+    } else {
+        direction_t = RX;
+        throw pax::runtime_error("filter_bank got an invalid channel string.");
+    }
+}
+
+void pax::filter_bank_impl::set_rx_path_throw_outside_flt(bool throw_outside_amp){
+    switch (which_ad9361_ic) {
+    case 0:
+    case 2:
+        sim_flt_status.GPOA_FLT_OUTSIDE |= 0x11;
+        sim_flt_status.GPOA_FLT_OUTSIDE &= ~(1 << 3);
+        sim_flt_status.GPOA_FLT_OUTSIDE |= !throw_outside_amp << 3;
+        break;
+    case 4:
+    case 6:
+        sim_flt_status.GPOA_FLT_OUTSIDE |= 0x11;
+        sim_flt_status.GPOA_FLT_OUTSIDE &= ~(1 << 7);
+        sim_flt_status.GPOA_FLT_OUTSIDE |= !throw_outside_amp << 7;
+        break;
+    default:
+        break;
+    }
+
+    iface->write_spi((1 << 11), conf, ((1 << 6) << 16) | (0x12 << 8) | sim_flt_status.GPOA_FLT_OUTSIDE, 24);
+}
+
+void pax::filter_bank_impl::do_rx_attenuation(uint8_t value){
+    if(value > 45)
+        value = 45;
+
+    value /= 3;
+    value ^= 0xf;
+    switch (which_ad9361_ic) {
+    case 0:
+    case 2:
+        iface->write_spi((1 << 12), conf, value, 4);
+        break;
+    case 4:
+    case 6:
+        iface->write_spi((1 << 13), conf, value, 4);
+        break;
+    default:
+        break;
     }
 }
 

@@ -463,7 +463,7 @@ private:
             vAD9361[i]->set_agc("RX2",false);
             vAD9361[i]->set_gain("RX1",RX_GAIN);
             vAD9361[i]->set_gain("RX2",RX_GAIN);
-            vAD9361[i]->set_iq_balance_auto("RX",true);
+            vAD9361[i]->set_iq_balance_auto("RX",false);
             if(i == 1){ // PH
                 vAD9361[i]->set_active_chains(true,true,true,true);
                 vAD9361[i]->tune("TX",_TEST_FREQ);

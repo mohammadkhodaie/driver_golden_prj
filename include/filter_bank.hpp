@@ -36,7 +36,15 @@ public:
                       AD_9361_1_GPO,
                       AD_9361_2_GPO,
                       AD_9361_3_GPO,
-                      PAX_GPIO,SETTING_REG_TO_PIN} FILTER_BANK_INTERFACE ; //add here any typeof interface you want
+                      PAX_GPIO,SETTING_REG_TO_PIN
+                     ,SPI_to_GPO0
+                     ,SPI_to_GPO1
+                     ,SPI_to_GPO2
+                     ,SPI_to_GPO3
+                     ,SPI_to_GPO4
+                     ,SPI_to_GPO5
+                     ,SPI_to_GPO6
+                     ,SPI_to_GPO7} FILTER_BANK_INTERFACE ; //add here any typeof interface you want
     }filter_bank_interface;
 
 
@@ -64,6 +72,30 @@ public:
         typedef enum {low_pass_40MHz=0,low_pass_100MHz,low_pass_250MHz,low_pass_450MHz,low_pass_900MHz,low_pass_2200MHz,low_pass_6000MHz} FILTER_PATH_virtex;
     }filter_bank_virtex_value;
 
+
+    typedef struct
+    {
+        typedef struct
+        {
+            typedef enum {low_pass_40MHz=0,low_pass_100MHz,low_pass_250MHz,low_pass_450MHz,low_pass_900MHz,low_pass_2200MHz,low_pass_6000MHz} sub_flt;
+        }FILTER_PATH_30_6000MHz;
+
+        typedef struct
+        {
+            typedef enum {low_pass_900MHz,low_pass_2200MHz} sub_flt;
+        }FILTER_PATH_2000_6000MHz;
+
+        typedef struct
+        {
+            typedef enum {low_pass_900MHz,low_pass_2200MHz} sub_flt;
+        }FILTER_PATH_500_2500MHz;
+
+        typedef struct
+        {
+            typedef enum {low_pass_100MHz,low_pass_250MHz,low_pass_450MHz,low_pass_900MHz} sub_flt;
+        }FILTER_PATH_100_1000MHz;
+    }filter_bank_sim_value;
+
     virtual void sky_v2_filter_bank_init() = 0;
     virtual void set_filter_path_sky_v2(filter_bank_sky_v2_value::FILTER_PATH_SKY_V2) = 0;
     virtual void set_filter_path_sky_v2(float freq , bool set_ad9361 = true) = 0;
@@ -72,7 +104,14 @@ public:
     virtual void set_filter_path_virtex(pax::filter_bank::filter_bank_virtex_value::FILTER_PATH_virtex in) = 0;
     virtual void set_filter_path_virtex(float freq , bool set_ad9361 = true) = 0;
 
-
+    virtual void simulator_filter_bank_init() = 0;
+    virtual void set_filter_path_simulator(float freq ,std::string direction, bool set_ad9361 = true) = 0;
+    virtual void set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_30_6000MHz::sub_flt in) = 0;
+    virtual void set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_100_1000MHz::sub_flt in) = 0;
+    virtual void set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_500_2500MHz::sub_flt in) = 0;
+    virtual void set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_2000_6000MHz::sub_flt in) = 0;
+    virtual void set_rx_path_throw_outside_flt(bool throw_outside_amp) = 0;
+    virtual void do_rx_attenuation(uint8_t value) = 0;
 protected :
     filter_bank_interface::FILTER_BANK_INTERFACE interface_type;
     std::vector<pax::usrp::ad9361_ctrl::sptr> vAD9361;

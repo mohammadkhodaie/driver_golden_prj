@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
         std::cout<<boost::format("NO PAX FOUND!!!")<<std::endl;
         exit(0);
     }
+
     pax_iface::sptr iface = pax_iface::make(pax::transport::udp_simple::make_connected(
                                                   out[0]["addr"], BOOST_STRINGIZE(USRP2_UDP_CTRL_PORT)
             ));

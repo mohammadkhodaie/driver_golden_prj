@@ -25,14 +25,14 @@ boost::cnv::cstream ccnv;
 
 
     mac.set_addr("00:50:C2:85:3F:FF");ip.set_addr("192.168.10.3");
-    std::string board_type("8K410T-rev.1.0");       // "PAX2.D-rev.0.1"   "PAXGNS-rev.0.0"
+    std::string board_type("PAX8V7-rev.1.0");       // "PAX2.D-rev.0.1"   "PAXGNS-rev.0.0"
                                                     // "PAX2S6-rev.0.0" "PAX2S6-rev.1.0"
-                                                    // "8K410T-rev.1.0"
+                                                    // "8K410T-rev.1.0" "PAX8V7-rev.1.0"
 
 
 
-    std::string serial_daughter("512020");                   // 057058
-    std::string serial_mother=(std::string("S/N : ")+"A095011");
+    std::string serial_daughter("190001");    //512020               // 057058
+    std::string serial_mother=(std::string("S/N : ")+"190001"); //A095011
 
 
     pax::eeprom::sptr db=pax::eeprom::make(tester.iface);

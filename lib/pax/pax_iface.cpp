@@ -38,6 +38,7 @@
 #include <tasks.hpp>
 #include <pax_regs.hpp>
 #include <safe_call.h>
+
 namespace fs = boost::filesystem;
 
 static const double CTRL_RECV_TIMEOUT = 1.0;
@@ -187,7 +188,7 @@ public:
     * BPI
   **********************************************************************/
     boost::uint16_t transact_bpi(uint32_t addr, uint16_t data, usrp2_bpiflash_16x_action_old_t action)
-    {
+    { 
         usrp2_ctrl_data_t out_data = usrp2_ctrl_data_t();
         out_data.id = htonl(PAX_CTRL_ID_TRANSACT_BPI_BRO);
         out_data.data.bpi_16x_args.addr=htonl(addr);
@@ -205,14 +206,13 @@ public:
         out_data.data.bpi_16x_args.addr=htonl(addr);
         for(uint8_t i=0;i<32;i++)
             out_data.data.bpi_16x_args.data[i] = htons(data[i]);
-//        memcpy(out_data.data.bpi_16x_args.data,data,64);
+        //memcpy(out_data.data.bpi_16x_args.data,data,64);
         out_data.data.bpi_16x_args.action=static_cast<boost::uint8_t>(action);
         usrp2_ctrl_data_t in_data = this->ctrl_send_and_recv(out_data, MIN_PROTO_COMPAT_SPI);
         PAX_ASSERT_THROW(ntohl(in_data.id) == PAX_CTRL_ID_TRANSACTED_BPI_DUDE);
         return ntohs(in_data.data.bpi_16x_args.data[0]);
     }
     void transact_bpif( uint32_t addr, uint16_t* data,  uint8_t n_2byte, usrp2_bpiflash_16x_action_t action ){
-
         usrp2_ctrl_data_t out_data = usrp2_ctrl_data_t();
         out_data.id = htonl(PAX_CTRL_ID_TRANSACT_BPI_BRO);
         out_data.data.bpi_16x_args.addr=htonl(addr);
@@ -237,20 +237,20 @@ public:
     **********************************************************************/
       void transact_spif(uint32_t addr, uint8_t* data,uint8_t nbyte,pax::flash_iface::usrp2_spiflash_action_t action)
       {
-          usrp2_ctrl_data_t out_data = usrp2_ctrl_data_t();
-          out_data.id = htonl(PAX_CTRL_ID_TRANSACT_SPIF_BRO);
-          out_data.data.spif_args.addr=htonl(addr);
-          for(int i=0;i<nbyte;i++){
-              out_data.data.spif_args.data[i]=(data[i]);
-          }
-          out_data.data.spif_args.action= static_cast<boost::uint8_t>(action);
-          out_data.data.spif_args.nbyte=nbyte;
+        usrp2_ctrl_data_t out_data = usrp2_ctrl_data_t();
+        out_data.id = htonl(PAX_CTRL_ID_TRANSACT_SPIF_BRO);
+        out_data.data.spif_args.addr=htonl(addr);
+        for(int i=0;i<nbyte;i++){
+          out_data.data.spif_args.data[i]=(data[i]);
+        }
+        out_data.data.spif_args.action= static_cast<boost::uint8_t>(action);
+        out_data.data.spif_args.nbyte=nbyte;
 
-          usrp2_ctrl_data_t in_data = this->ctrl_send_and_recv(out_data, MIN_PROTO_COMPAT_SPI);
-          PAX_ASSERT_THROW(ntohl(in_data.id) == PAX_CTRL_ID_TRANSACTED_SPIF_DUDE);
-          for(uint8_t i=0;i<nbyte;i++){
-              data[i]=in_data.data.spif_args.data[i];
-          }
+        usrp2_ctrl_data_t in_data = this->ctrl_send_and_recv(out_data, MIN_PROTO_COMPAT_SPI);
+        PAX_ASSERT_THROW(ntohl(in_data.id) == PAX_CTRL_ID_TRANSACTED_SPIF_DUDE);
+        for(uint8_t i=0;i<nbyte;i++){
+          data[i]=in_data.data.spif_args.data[i];
+        }
       }
 
 
@@ -264,6 +264,7 @@ public:
         size_t num_bits,
         bool readback
     ){
+
         static const pax::dict<pax::spi_config_t::edge_t, int> spi_edge_to_otw = boost::assign::map_list_of
             (pax::spi_config_t::EDGE_RISE, USRP2_CLK_EDGE_RISE)
             (pax::spi_config_t::EDGE_FALL, USRP2_CLK_EDGE_FALL)
@@ -553,6 +554,97 @@ public:
         }
     }
 
+
+
+    /***********************************************************************
+     * CFI
+     **********************************************************************/
+
+    void set_fifo_ctrl(boost::shared_ptr<usrp2_fifo_ctrl> fifo_ctrl){_fifo_ctrl = fifo_ctrl;}
+
+    void cfi_write_32_bits(uint32_t addr,uint32_t data) {
+        addr = (addr & 0x1fffffff) | ( (((uint32_t)0) <<29));
+        _fifo_ctrl->poke32(SETTING_REGS_BASE + 4 * CFI_BASE, data);
+        _fifo_ctrl->poke32(SETTING_REGS_BASE + 4 * (CFI_BASE + 1), addr);
+        while(_fifo_ctrl->peek32(SETTING_REGS_BASE + 4 * 3) == 0);
+    }
+    uint32_t cfi_read_32_bits(uint32_t addr) {
+        addr = (addr & 0x1fffffff) | ( (((uint32_t)1) <<29));
+        _fifo_ctrl->poke32(SETTING_REGS_BASE + 4 * (CFI_BASE + 1), addr);
+        while(_fifo_ctrl->peek32(SETTING_REGS_BASE + 4 * 3) == 0);
+        return (_fifo_ctrl->peek32(SETTING_REGS_BASE + 4 * 2));
+
+    }
+    void cfi_write_16_bits(uint32_t addr,uint32_t data) {
+        uint32_t temp = (data & 0xffff);
+        data =  temp | (temp << 16);
+        addr = (addr & 0x1fffffff) | ( (((uint32_t)2) <<29));
+        _fifo_ctrl->poke32(SETTING_REGS_BASE + 4 * CFI_BASE, data);
+        _fifo_ctrl->poke32(SETTING_REGS_BASE + 4 * (CFI_BASE + 1), addr);
+        while(_fifo_ctrl->peek32(SETTING_REGS_BASE + 4 * 3) == 0);
+
+    }
+    uint16_t cfi_read_16_bits(uint32_t addr) {
+        addr = (addr & 0x1fffffff) | ( (((uint32_t)3) <<29));
+        _fifo_ctrl->poke32(SETTING_REGS_BASE + 4 * (CFI_BASE + 1), addr);
+        while(_fifo_ctrl->peek32(SETTING_REGS_BASE + 4 * 3) == 0);
+        return (uint16_t)(_fifo_ctrl->peek32(SETTING_REGS_BASE + 4 * 2));
+    }
+    uint8_t cfi_read_8_bits(uint32_t addr) {
+        addr = (addr & 0x1fffffff) | ( (((uint32_t)4) <<29));
+        _fifo_ctrl->poke32(SETTING_REGS_BASE + 4 * (CFI_BASE + 1), addr);
+        while(_fifo_ctrl->peek32(SETTING_REGS_BASE + 4 * 3) == 0);
+        return (uint8_t)(_fifo_ctrl->peek32(SETTING_REGS_BASE + 4 * 2));
+    }
+    inline void _bpi_write_reg(boost::uint32_t address,boost::uint16_t data){
+        #ifdef __CFI__
+            cfi_data_write_16bits(address, data);
+        #else
+            transact_bpi(address,data,USRP2_WRITE_ONE_BPIFLASH_16X);
+        #endif
+    }
+    inline boost::uint32_t _bpi_read_reg(boost::uint32_t address){
+        #ifdef __CFI__
+            return cfi_read_16_bits(address);
+        #else
+            return transact_bpi(address,address,USRP2_READ_ONE_BPIFLASH_16X);
+        #endif
+    }
+
+    inline boost::uint32_t _bpi_read_reg(boost::uint32_t address,boost::uint16_t data){
+        #ifdef __CFI__
+            return cfi_read_16_bits(address);
+        #else
+            return transact_bpi(address,data,USRP2_READ_ONE_BPIFLASH_16X);
+        #endif
+    }
+
+    inline void _bpi_write_N2BYTE(uint32_t addr,uint16_t* data,uint8_t n_2byte){
+        #ifdef __CFI__
+            for(uint8_t i = 0; i < n_2byte; i++)
+                cfi_data_write_16bits(addr + 2 * i,*(data + i));
+        #else
+            transact_bpif(addr, data, n_2byte, USRP2_WRITE_2NBYTE_BPIFLASH_16X);
+        #endif
+    }
+    inline void _bpi_read_N2BYTE(uint32_t addr,uint16_t* data,uint8_t n_2byte){
+        #ifdef __CFI__
+            for(uint8_t i = 0; i < n_2byte; i++)
+                *(data + i) = cfi_read_16_bits(addr);
+        #else
+            transact_bpif(addr, data, n_2byte, USRP2_READ_2NBYTE_BPIFLASH_16X);
+        #endif
+    }
+    inline void _bpi_write_buffer(uint32_t addr,uint16_t* data){
+        #ifdef __CFI__
+            for(uint8_t i = 0; i < 32; i++)
+                cfi_data_write_16bits(addr + 2 * i,*(data + i));
+        #else
+            transact_bpi_buffer(addr, data, USRP2_WRITE_32_BPIFLASH_16X);
+        #endif
+    }
+
+
 private:
     //this lovely lady makes it all possible
     pax::transport::udp_simple::sptr _ctrl_transport;
@@ -564,13 +656,15 @@ private:
 
     //lock thread stuff
     pax::task::sptr _lock_task;
+    boost::shared_ptr<usrp2_fifo_ctrl> _fifo_ctrl;
 };
 
 /***********************************************************************
  * Public make function for usrp2 interface
  **********************************************************************/
- pax_iface::sptr pax_iface::make(pax::transport::udp_simple::sptr ctrl_transport){
-    return pax_iface::sptr(new pax_iface_impl(ctrl_transport));
+
+pax_iface::sptr pax_iface::make(pax::transport::udp_simple::sptr ctrl_transport){
+   return pax_iface::sptr(new pax_iface_impl(ctrl_transport));
 }
 
 
