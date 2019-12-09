@@ -45,6 +45,7 @@ public:
  **********************************************************************/
 
     filter_bank_impl(std::vector<pax::usrp::ad9361_ctrl::sptr>& _vAD9361, pax_iface::sptr _wb_iface,
+                     spi_wb_iface::sptr _spi_iface,
                      pax::filter_bank::filter_bank_interface::FILTER_BANK_INTERFACE filter_bank_interface);
 
     ~filter_bank_impl(void){}

@@ -939,7 +939,7 @@ void ad9361_device_t::_calibrate_tx_quadrature()
      * terribly wrong in the driver execution flow. */
     //std::cout << (int)(_io_iface->peek8(0x017)) << std::endl;
     if ((_io_iface->peek8(0x017) & 0x0F) != 5) {
-        //std::cout << (int)(_io_iface->peek8(0x017)) << std::endl;
+        //std::cerr << (int)(_io_iface->peek8(0x017)) << std::endl;
         throw pax::runtime_error("[ad9361_device_t] TX Quad Cal started, but not in ALERT");
     }
 
@@ -2467,7 +2467,8 @@ void ad9361_device_t::digital_test_tone(bool enb) // Digital output on TX
 {
     boost::lock_guard<boost::recursive_mutex> lock(_mutex);
     //_io_iface->poke8(0x3F4, 0x02 | (enb ? 0x01 : 0x00));
-    /* sbm */ _io_iface->poke8(0x3F4, 0xC2 | (enb ? 0x01 : 0x00));
+     /* sbm */ _io_iface->poke8(0x3F4, 0xC2 | (enb ? 0x01 : 0x00));
+    // /* sbm */ _io_iface->poke8(0x3F4, 0x2 | (enb ? 0x01 : 0x00));//PH
 }
 
 /* sbm */

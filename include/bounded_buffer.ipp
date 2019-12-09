@@ -114,14 +114,14 @@ namespace pax{ namespace transport{
             _full_cond.notify_one();
             return true;
         }
+        bool not_full(void) const{return not _buffer.full();}
+        bool not_empty(void) const{return not _buffer.empty();}
 
     private:
         boost::mutex _mutex;
         boost::condition _empty_cond, _full_cond;
         boost::circular_buffer<elem_type> _buffer;
 
-        bool not_full(void) const{return not _buffer.full();}
-        bool not_empty(void) const{return not _buffer.empty();}
 
         boost::function<bool(void)> _not_full_fcn, _not_empty_fcn;
 

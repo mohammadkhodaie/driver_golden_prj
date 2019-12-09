@@ -7,10 +7,10 @@ int main(int argc, char* argv[])
     (void) argv;
 
     mb_container_type tester;
-    std::vector<boost::shared_ptr<pax::transport::sph::recv_packet_streamer> > streamers=pax_init(tester,2);
+    std::vector<boost::shared_ptr<pax::transport::sph::recv_packet_streamer> > streamers=pax_init(tester,8);
 
 #define _AD9361 1
-#define _TEST_FREQ (70e6)
+#define _TEST_FREQ (1000e6)
     // disable clock from ad9361
     tester.iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0x0);
 
@@ -24,26 +24,27 @@ int main(int argc, char* argv[])
             tester.ad_9361[i]->set_gain("TX2",50);
             ADSampleRate=tester.ad_9361[i]->set_clock_rate(40e6);
     //          tester.ad_9361[i]->swap_iq("TX",true);
-            tester.ad_9361[i]->output_digital_test_tone(false);
+            tester.ad_9361[i]->output_digital_test_tone(true);
         }
 
         std::cout << "Actual sample rate = " << ADSampleRate << std::endl;
 
         // enable clock from ad93611
         tester.iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0xff);
-        tester.sync->do_mcs();
+        //tester.sync->do_mcs();
 
-        tester.sync->PAX8V7_rx_cal_mode(false);
+        //tester.sync->PAX8V7_rx_cal_mode(false);
 
 
-    tester.iface->poke32(U2_REG_SR_ADDR(SR_RX_SW),1);
+    //tester.iface->poke32(U2_REG_SR_ADDR(SR_RX_SW),1);
 
     std::vector<boost::uint32_t> dd(10000,0);
-    std::complex<int16_t> *buffer = (std::complex<int16_t>*)malloc(10000*sizeof(std::complex<int16_t>));
+    std::vector<std::complex<uint16_t>> buffer(10000);
+//    std::complex<int16_t> *buffer = (std::complex<int16_t>*)malloc(10000*sizeof(std::complex<int16_t>));
     for(int i=0;i<10000;i++)
     {
-    buffer[i].real(pax::htonx(((boost::uint16_t)(((float)(1<<7))*std::cos(.10*boost::math::constants::pi<double>()*(double)i/10.0)+.5))));
-    buffer[i].imag(pax::htonx((((boost::uint16_t)(((float)(1<<7))*std::sin(.10*boost::math::constants::pi<double>()*(double)i/10.0)+.5)))));
+    buffer[i].real(pax::htonx(((boost::uint16_t)(((float)(1<<15))*std::cos(.10*boost::math::constants::pi<double>()*(double)i/10.0)+.5))));
+    buffer[i].imag(pax::htonx((((boost::uint16_t)(((float)(1<<15))*std::sin(.10*boost::math::constants::pi<double>()*(double)i/10.0)+.5)))));
   //  buffer[i].real(0xAABB);
    // buffer[i].imag(0xabcd);
     }
@@ -52,7 +53,7 @@ int main(int argc, char* argv[])
 
     // setup dds
     tester.iface->poke32(U2_REG_SR_ADDR(980),1);
-    tester.iface->poke32(U2_REG_SR_ADDR(981),(0x000f<<16)|0x000f); // scale_0
+    tester.iface->poke32(U2_REG_SR_ADDR(981),(0x0fff<<16)|0x0fff); // scale_0
     tester.iface->poke32(U2_REG_SR_ADDR(982),(0<<16)|32768>>1); // phase_0
     tester.iface->poke32(U2_REG_SR_ADDR(983),((32768>>10)<<16)|32768>>10); // incr_0
     //tester.iface->poke32(U2_REG_SR_ADDR(983),((0>>6)<<16)|0>>6); // incr_0
@@ -63,10 +64,10 @@ int main(int argc, char* argv[])
 
     tester.iface->poke32(U2_REG_SR_ADDR(255),0x0);
 
-    tester.tx_dsp[3]->set_tick_rate(4*ADSampleRate);
-    tester.tx_dsp[3]->set_link_rate(ADSampleRate);
-    tester.tx_dsp[3]->set_host_rate(10e6);
-    tester.tx_dsp[3]->set_freq(0.0e6);
+    tester.tx_dsp[0]->set_tick_rate(4*ADSampleRate);
+    tester.tx_dsp[0]->set_link_rate(ADSampleRate);
+    tester.tx_dsp[0]->set_host_rate(10e6);
+    tester.tx_dsp[0]->set_freq(0.0e6);
 
 
     tester.time64->set_tick_rate(100e6);
@@ -81,7 +82,7 @@ int main(int argc, char* argv[])
         md.has_time_spec  = false;
         md.time_spec = pax::time_spec_t(1.0); //give us 0.1 seconds to fill the tx buffers
     while(1){
-        tester.tx_streamers[0]->send(buffer,10000,md,3);
+        tester.tx_streamers[0]->send(buffer.data(),10000,md,3);
 //       pax::transport::sph::send_packet_streamer::send()
         md.end_of_burst   = false;
         md.start_of_burst = false;

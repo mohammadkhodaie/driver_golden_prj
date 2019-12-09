@@ -12,6 +12,15 @@ int main(int argc, char* argv[])
 
 
 
+        //tester.filter_bank[4]->set_filter_path_simulator(1000e6, "RX", false);
+        //std::cout << "ok!";
+
+
+//        while(1){
+//            for(int i = 0; i < 3000; i++)
+//                for(int j = 2; j < 4; j++)
+//                    tester.ad_9361[j]->tune("RX",(50+i)*1e6);
+//        }
         /*pax::flash_vec_t x = tester.iface->read_uid_flash();
         std::cout << "%%%%%%%%" << std::endl;
 
@@ -101,94 +110,96 @@ int main(int argc, char* argv[])
         //        typedef enum {low_pass_40MHz=0,low_pass_100MHz,low_pass_250MHz,low_pass_450MHz,low_pass_900MHz,low_pass_2200MHz,low_pass_6000MHz} FILTER_PATH_virtex;
 
 
-//        for(uint8_t j = 0;j < 4;j++)
-//            for(uint8_t w = 0; w < 2; w++)
-//                for(uint8_t k = 0; k < 7; k++){
-//                    tester.filter_bank[k]->set_rx_path_throw_outside_flt(true);
-//                    tester.filter_bank[k]->set_filter_path_simulator(200e6,"RX",false);
-//                }
 
-            //tester.filter_bank[7]->set_filter_path_simulator(700e6,"TX",false);
+        int which_9364 = 0;
+        long int freq = 500e6;
+        int gain = 65.5;
 
 
+        for (uint32_t i=0; i<(tester.N_AD9361 + tester.N_AD9364); i++){
+            if(i != which_9364){
+            tester.ad_9361[i]->set_active_chains(false,false,false,false);
+            tester.ad_9361[i]->tune("TX",freq,true);
+            tester.ad_9361[i]->set_gain("TX1",0);
+            tester.ad_9361[i]->output_digital_test_tone(false);
+            }
+        }
+
+        tester.ad_9361[which_9364]->set_active_chains(true,false,false,false);
+        tester.ad_9361[which_9364]->tune("TX",freq,true);
+        tester.ad_9361[which_9364]->set_gain("TX1",gain);
+        tester.ad_9361[which_9364]->output_digital_test_tone(true);
 
 
-/*        pax::spi_config_t conf;
+        // enable clock from ad93611
+        tester.iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0xff);
 
-        conf.mosi_edge = conf.EDGE_RISE;
-    int p = 0;
+        std::cout<<"1";
 
         while(true){
-            if(p>50)p=0;
-            tester.filter_bank[0]->do_rx_attenuation(p);
-            tester.filter_bank[4]->do_rx_attenuation(p);
-            std::cout << "ok" ;
-            p+=3;
-        }*/
+            /*tester.filter_bank[0]->set_filter_path_simulator(900e6,"TX",false);
+            tester.ad_9361[0]->tune("TX",50e6,false);
+            tester.ad_9361[0]->tune("TX",500e6,false);
+            tester.ad_9361[0]->tune("TX",1000e6,false);
+            tester.filter_bank[0]->set_filter_path_simulator(2200e6,"TX",false);
+            tester.ad_9361[0]->tune("TX",50e6,false);
+            tester.ad_9361[0]->tune("TX",1000e6,false);
+            tester.ad_9361[0]->tune("TX",2400e6,false);
 
-/*        while(true){
-            tester.filter_bank[0]->do_rx_attenuation(0);
-
-            tester.filter_bank[0]->set_filter_path_simulator(60e6, "RX", false);
-            std::cout << "ok" ;
-            tester.filter_bank[0]->set_filter_path_simulator(130e6, "RX", false);
-            std::cout << "ok" ;
-//            for(uint8_t i = 0; i<50;i+=3){
-//                tester.filter_bank[0]->do_rx_attenuation(i);
-//                std::cout << "ok" ;
-//            }
-            tester.filter_bank[0]->set_filter_path_simulator(264e6, "RX", false);
-            std::cout << "ok" ;
-            tester.filter_bank[0]->set_filter_path_simulator(470e6, "RX", false);
-            std::cout << "ok" ;
-            tester.filter_bank[0]->set_filter_path_simulator(1000e6, "RX", false);
-            std::cout << "ok" ;
-            tester.filter_bank[0]->set_filter_path_simulator(2400e6, "RX", false);
-            std::cout << "ok" ;
-            tester.filter_bank[0]->set_filter_path_simulator(3000e6, "RX", false);
-            std::cout << "ok" ;
-
-            tester.filter_bank[4]->set_filter_path_simulator(60e6, "RX", false);
-            std::cout << "ok" ;
-            tester.filter_bank[4]->set_filter_path_simulator(130e6, "RX", false);
-            std::cout << "ok" ;
-            tester.filter_bank[4]->set_filter_path_simulator(264e6, "RX", false);
-            std::cout << "ok" ;
-            tester.filter_bank[4]->set_filter_path_simulator(470e6, "RX", false);
-            std::cout << "ok" ;
-            tester.filter_bank[4]->set_filter_path_simulator(1000e6, "RX", false);
-            std::cout << "ok" ;
-            tester.filter_bank[4]->set_filter_path_simulator(2400e6, "RX", false);
-            std::cout << "ok" ;
-            tester.filter_bank[4]->set_filter_path_simulator(3000e6, "RX", false);
-            std::cout << "ok" ;
-
-
-            tester.filter_bank[7]->set_filter_path_simulator(900e6,"TX",false);
-            std::cout << "ok" ;
-            tester.filter_bank[7]->set_filter_path_simulator(2200e6,"TX",false);
-            std::cout << "ok" ;
-
-
-            tester.filter_bank[5]->set_filter_path_simulator(100e6,"TX",false);
-            std::cout << "ok" ;
-            tester.filter_bank[5]->set_filter_path_simulator(200e6,"TX",false);
-            std::cout << "ok" ;
-            tester.filter_bank[5]->set_filter_path_simulator(300e6,"TX",false);
-            std::cout << "ok" ;
-            tester.filter_bank[5]->set_filter_path_simulator(500e6,"TX",false);
-            std::cout << "ok" ;
+            tester.filter_bank[2]->set_filter_path_simulator(100e6,"TX",false);
+            tester.ad_9361[2]->tune("TX",50e6,false);
+            tester.ad_9361[2]->tune("TX",90e6,false);
+            tester.ad_9361[2]->tune("TX",130e6,false);
+            tester.filter_bank[2]->set_filter_path_simulator(200e6,"TX",false);
+            tester.ad_9361[2]->tune("TX",50e6,false);
+            tester.ad_9361[2]->tune("TX",100e6,false);
+            tester.ad_9361[2]->tune("TX",264e6,false);
+            tester.filter_bank[2]->set_filter_path_simulator(300e6,"TX",false);
+            tester.ad_9361[2]->tune("TX",50e6,false);
+            tester.ad_9361[2]->tune("TX",200e6,false);
+            tester.ad_9361[2]->tune("TX",470e6,false);
+            tester.filter_bank[2]->set_filter_path_simulator(500e6,"TX",false);
+            tester.ad_9361[2]->tune("TX",50e6,false);
+            tester.ad_9361[2]->tune("TX",500e6,false);
+            tester.ad_9361[2]->tune("TX",1000e6,false);
 
 
 
-            tester.filter_bank[3]->set_filter_path_simulator(900e6,"TX",false);
-            std::cout << "ok" ;
-            tester.filter_bank[3]->set_filter_path_simulator(2200e6,"TX",false);
-            std::cout << "ok" ;
+            tester.filter_bank[4]->set_filter_path_simulator(900e6,"TX",false);
+            tester.ad_9361[4]->tune("TX",50e6,false);
+            tester.ad_9361[4]->tune("TX",500e6,false);
+            tester.ad_9361[4]->tune("TX",1000e6,false);
+            tester.filter_bank[4]->set_filter_path_simulator(2200e6,"TX",false);
+            tester.ad_9361[4]->tune("TX",50e6,false);
+            tester.ad_9361[4]->tune("TX",1000e6,false);
+            tester.ad_9361[4]->tune("TX",2400e6,false);*/
+
+        /*while(1){
+            //for(int i = 1; i < 8; i+=4){
+            int i = 1;
+
+            tester.ad_9361[1]->tune("RX",60e6,true);
+            tester.ad_9361[1]->tune("RX",450e6,true);
+            tester.ad_9361[1]->tune("RX",60e6,true);
 
 
 
-}*/
+
+                tester.filter_bank[i]->do_rx_attenuation(0);
+                tester.filter_bank[i]->set_filter_path_simulator(60e6, "RX", false);
+//                tester.filter_bank[i]->set_rx_path_throw_outside_flt(true);
+//                tester.filter_bank[i]->set_rx_path_throw_outside_flt(false);
+                tester.filter_bank[i]->set_filter_path_simulator(130e6, "RX", false);
+//                for(uint8_t j = 0; j<50;j+=3)
+//                    tester.filter_bank[i]->do_rx_attenuation(j);
+//                tester.filter_bank[i]->do_rx_attenuation(0);
+                tester.filter_bank[i]->set_filter_path_simulator(264e6, "RX", false);
+                tester.filter_bank[i]->set_filter_path_simulator(470e6, "RX", false);
+                tester.filter_bank[i]->set_filter_path_simulator(1000e6, "RX", false);
+                tester.filter_bank[i]->set_filter_path_simulator(2400e6, "RX", false);
+                tester.filter_bank[i]->set_filter_path_simulator(3000e6, "RX", false);
+            }*/
+        }
 
 
 //        uint32_t    temp =  tester.iface->peek32(READBACK_BASE + 4*1);

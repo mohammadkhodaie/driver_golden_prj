@@ -49,7 +49,7 @@ public:
 
 
 
-    static sptr  make(std::vector<pax::usrp::ad9361_ctrl::sptr>& _vAD9361, pax_iface::sptr _wb_iface,
+    static sptr  make(std::vector<pax::usrp::ad9361_ctrl::sptr>& _vAD9361, pax_iface::sptr _wb_iface, spi_wb_iface::sptr _spi_iface,
                       pax::filter_bank::filter_bank_interface::FILTER_BANK_INTERFACE _filter_bank_interface);
 
 
@@ -116,6 +116,7 @@ protected :
     filter_bank_interface::FILTER_BANK_INTERFACE interface_type;
     std::vector<pax::usrp::ad9361_ctrl::sptr> vAD9361;
     pax_iface::sptr iface;
+    spi_wb_iface::sptr spi_iface;
     uint8_t which_ad9361_ic;
 };
 

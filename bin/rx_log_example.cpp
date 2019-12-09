@@ -41,8 +41,11 @@ int main(int argc, char* argv[])
     //tester.sync->PAX8V7_calibration(_TUNE_FREQ,_SAMP_FREQ,false);//1580.42e6
     tester.sync->PAX8K7_calibration(_TUNE_FREQ,_SAMP_FREQ,false);//1580.42e6
 
-
-
+    for (size_t i=0; i<tester.ad_9361.size(); i++)
+    {
+        tester.ad_9361[i]->set_gain("RX1",30);
+        tester.ad_9361[i]->set_gain("RX2",30);
+    }
 
     {pax::stream_cmd_t stream_cmd(pax::stream_cmd_t::STREAM_MODE_START_CONTINUOUS);
 

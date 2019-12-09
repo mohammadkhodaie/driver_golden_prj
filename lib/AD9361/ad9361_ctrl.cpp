@@ -388,7 +388,6 @@ private:
         return _device.swap_iq(direction, enable);
     }
 
-
     ad9361_device_t _device;
     boost::mutex    _mutex;
 };

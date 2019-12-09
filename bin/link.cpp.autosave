@@ -48,7 +48,7 @@ boost::cnv::cstream ccnv;
                                                             //"PAX2K7 FILTERBANK"  "PAX8V7 FILTERBANK"
     info.serial.assign(serial_daughter);                     //config
     db->set_info(info);
-    //db->write_info();
+    db->write_info();
 
 /*
     if (tester.iface->get_flash_type()==pax::flash::SPI_IS25LPxxx){

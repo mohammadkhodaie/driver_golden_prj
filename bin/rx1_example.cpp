@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
     tester.iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0xFF);
 
 
-    tester.sync->PAX8V7_rx_cal_mode(false);
+    //tester.sync->PAX8V7_rx_cal_mode(false);
     //tester.sync->do_mcs();
     //tester.sync->PAX8V7_calibration(0,0,false);
     std::cout<<"real sample_rate:  "<<ADSampleRate<<std::endl;

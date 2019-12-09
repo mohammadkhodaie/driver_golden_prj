@@ -36,7 +36,7 @@ void pax::usrp::pax_ad9361_client_t::set_filter_bank(double freq, std::string di
     case pax8v7_9361_filter_bank:
             flt->set_filter_path_virtex(freq,false);
         break;
-    case pax8_gnss_8ch:
+    case pax8_gnss_8ch_monitoring:
             flt->set_filter_path_simulator(freq, direction,false);
         break;
     default:
@@ -954,8 +954,8 @@ void board_specefic_initializing(mb_container_type& tester){
     case pax::usrp::pax2s6_D: {
         tester.iface->set_FPGA_devices(pax::XILINX_FPGA::XC6SLX150);
 #ifdef __HAND_OFF__
-        tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface,pax::filter_bank::filter_bank_interface::AD_9361_0_GPO));
-        tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface,pax::filter_bank::filter_bank_interface::AD_9361_1_GPO));
+        tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface, tester.spi_and_wb_iface,pax::filter_bank::filter_bank_interface::AD_9361_0_GPO));
+        tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface, tester.spi_and_wb_iface,pax::filter_bank::filter_bank_interface::AD_9361_1_GPO));
         for (int i=0;i<2;i++){
             tester.filter_bank[i]->hand_off_filter_bank_init();
         }
@@ -975,7 +975,7 @@ void board_specefic_initializing(mb_container_type& tester){
             for(int i=0;i<8;i++)
                 tester.iface->poke32(U2_REG_SR_ADDR(SR_PHASE_DELAY_VALUE(i)),((1<<31)));
             for(uint8_t i=0;i<8;i++)
-                tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface,static_cast<pax::filter_bank::filter_bank_interface::FILTER_BANK_INTERFACE>(i + static_cast<int>(pax::filter_bank::filter_bank_interface::SPI_to_GPO0))));
+                tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface, tester.spi_and_wb_iface, static_cast<pax::filter_bank::filter_bank_interface::FILTER_BANK_INTERFACE>(i + static_cast<int>(pax::filter_bank::filter_bank_interface::SPI_to_GPO0))));
         }break;
         case pax::usrp::pax8_gnss_4ch : {
             tester.sync->do_mcs();
@@ -996,7 +996,7 @@ void board_specefic_initializing(mb_container_type& tester){
             for(int i=0;i<8;i++)
                 tester.iface->poke32(U2_REG_SR_ADDR(SR_PHASE_DELAY_VALUE(i)),((1<<31)));
             for(uint8_t i=0;i<8;i++)
-                tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface,static_cast<pax::filter_bank::filter_bank_interface::FILTER_BANK_INTERFACE>(i + static_cast<int>(pax::filter_bank::filter_bank_interface::SPI_to_GPO0))));
+                tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface, tester.spi_and_wb_iface,static_cast<pax::filter_bank::filter_bank_interface::FILTER_BANK_INTERFACE>(i + static_cast<int>(pax::filter_bank::filter_bank_interface::SPI_to_GPO0))));
         }break;
         default:{throw pax::not_implemented_error("not implemented this type of pax8_D_K410T");}break;
         }
@@ -1009,7 +1009,7 @@ void board_specefic_initializing(mb_container_type& tester){
         tester.gps->run();
         switch(tester.daughter_b){
         case pax::usrp::pax2_9361_filter_bank : {
-            tester.filter_bank.push_back(pax::filter_bank::make(tester.ad_9361,tester.iface,pax::filter_bank::filter_bank_interface::SETTING_REG_TO_PIN));
+            tester.filter_bank.push_back(pax::filter_bank::make(tester.ad_9361,tester.iface, tester.spi_and_wb_iface,pax::filter_bank::filter_bank_interface::SETTING_REG_TO_PIN));
             tester.filter_bank[0]->sky_v2_filter_bank_init();
         } break;
         case pax::usrp::pax2: break;
@@ -1020,7 +1020,7 @@ void board_specefic_initializing(mb_container_type& tester){
         tester.iface->set_FPGA_devices(pax::XILINX_FPGA::XC7V690T);
         tester.sync->do_mcs();
         for(uint8_t i=0;i<4;i++){
-            tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface,static_cast<pax::filter_bank::filter_bank_interface::FILTER_BANK_INTERFACE>(i)));
+            tester.filter_bank.push_back( pax::filter_bank::make(tester.ad_9361,tester.iface, tester.spi_and_wb_iface,static_cast<pax::filter_bank::filter_bank_interface::FILTER_BANK_INTERFACE>(i)));
         }
         for(uint8_t i=0;i<8;i++)
             tester.iface->poke32(U2_REG_SR_ADDR(SR_PHASE_DELAY_VALUE(i)),((1<<31)));

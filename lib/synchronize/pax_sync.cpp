@@ -125,6 +125,7 @@ public:
            normalize_and_commit_I_Q_PAX8(teta,i);
            if(check_phase_calibration_met(pax8_accurecy_of_phase_calibration_degree,I_delay,Q_delay)){
 //               if(test_mode)
+               std::cout << "teta" << i << ": " << teta*_degree_180/pi << std::endl;
                 std::cerr<<"PHASE reported  "<<i<<"     "<< std::atan2(Q_delay,I_delay)*_degree_180/pi<<std::endl;
                     i++;failed_iterator=0;teta=0;extra_calibrate=false;
                tx_sw_ch_for_cal_pax8(i);
@@ -145,6 +146,8 @@ public:
                }
            }
         }
+
+       //vAD9361[2]->set_gain("TX1",0);
        PAX8K7_rx_cal_mode(false);
        _wb_iface->poke32(U2_REG_SR_ADDR(255),0x00);
        vAD9361[2]->set_active_chains(false,false,true,true);
@@ -426,11 +429,11 @@ private:
             vAD9361[i]->set_agc("RX2",false);
             vAD9361[i]->set_gain("RX1",RX_GAIN);
             vAD9361[i]->set_gain("RX2",RX_GAIN);
-            vAD9361[i]->set_iq_balance_auto("RX",true);
+            vAD9361[i]->set_iq_balance_auto("RX",false);
             if(i==2){ // PH
                 vAD9361[i]->set_active_chains(true,true,true,true);
                 vAD9361[i]->tune("TX",_TEST_FREQ);
-                vAD9361[i]->set_gain("TX1",60);
+                vAD9361[i]->set_gain("TX1",80);
                 vAD9361[i]->set_gain("TX2",0);
                 vAD9361[i]->output_digital_test_tone(false);
             }
