@@ -25,14 +25,14 @@ boost::cnv::cstream ccnv;
 
 
     mac.set_addr("00:50:C2:85:3F:FF");ip.set_addr("192.168.10.3");
-    std::string board_type("8K410T-rev.1.0");       // "PAX2.D-rev.0.1"   "PAXGNS-rev.0.0"
+    std::string board_type("PAX2S6-rev.1.0");       // "PAX2.D-rev.0.1"   "PAXGNS-rev.0.0"
                                                     // "PAX2S6-rev.0.0" "PAX2S6-rev.1.0"
                                                     // "8K410T-rev.1.0" "PAX8V7-rev.1.0"
 
 
 
-    std::string serial_daughter("190001");    //512020               // 057058
-    std::string serial_mother=(std::string("S/N : ")+"190001"); //A095011
+    std::string serial_daughter("955015");    //512020               // 057058 /////6dig
+    std::string serial_mother=(std::string("S/N : ")+"955015"); //A095011 /////6dig
 
 
     pax::eeprom::sptr db=pax::eeprom::make(tester.iface);
@@ -41,17 +41,17 @@ boost::cnv::cstream ccnv;
     db->set_mac_addr(mac);
 
     pax::eeprom::board_info info;
-    info.board_mfg.assign("PartoCom Asia Ltd.");            //config
+    info.board_mfg.assign("PA Ltd.");//"PartoCom Asia Ltd.");            //config
     info.part.assign("AD9364");                             //config
     info.product_name.assign("PAXGNS8 Monitorin");          //"PAX2S6 Analog Kit"  "PAXGNS8 Monitorin"
                                                             //"PAXGNS Analog Kit"  "PAXGNS Analog CAL"
                                                             //"PAX2K7 FILTERBANK"  "PAX8V7 FILTERBANK"
     info.serial.assign(serial_daughter);                     //config
     db->set_info(info);
-    //db->write_info();
+    db->write_info();
 
-/*
-    if (tester.iface->get_flash_type()==pax::flash::SPI_IS25LPxxx){
+
+/*    if (tester.iface->get_flash_type()==pax::flash::SPI_IS25LPxxx){
 
         std::vector<uint8_t> pp(8,0);
 
@@ -219,9 +219,9 @@ boost::cnv::cstream ccnv;
         tester.iface->write_flash(0x89,0xC0);  // OTP Program Setup
         tester.iface->write_flash(0x89,0xFFF8); // Confirm Data
     }
+
+
 */
-
-
     return 0;
 }
 

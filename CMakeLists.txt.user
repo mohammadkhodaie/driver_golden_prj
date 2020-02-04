@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.5.2, 2019-12-07T17:35:13. -->
+<!-- Written by QtCreator 4.5.2, 2020-02-04T16:56:06. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -1011,7 +1011,7 @@
      <value type="int">14</value>
     </valuelist>
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguation.Title">pax_burner</value>
-    <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.Arguments"></value>
+    <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.Arguments">pax_burner --fpga /home/parto/Documents/k7-410/simulator_vivado/simulator_k7_410.runs/impl_1/pax8.bit</value>
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory"></value>
     <value type="QString" key="CMakeProjectManager.CMakeRunConfiguration.UserWorkingDirectory.default">/home/parto/Desktop/pax/driver/build-driver_golden-Desktop-Debug/bin</value>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>

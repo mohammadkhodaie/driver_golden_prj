@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
     std::vector<recorder::sptr> recorders(streamers.size());
 
     for (size_t i=0; i<streamers.size(); i++){
-        recorders[i]=recorder::make(streamers[i],i,200000);
+        recorders[i]=recorder::make(streamers[i],i, tester,200000);
         runners[i]=new boost::thread(boost::bind(&recorder::run,recorders[i]));
     }
 

@@ -337,7 +337,7 @@ public:
     }
 
     //! fast tune the given frontend
-    double tunef(const std::string &which, const double freq)
+    double tunef(const std::string &which, const double freq, bool set_filter_bank = true)
     {
         boost::lock_guard<boost::mutex> lock(_mutex);
 
@@ -347,7 +347,7 @@ public:
         const double value = ad9361_ctrl::get_rf_freq_range().clip(clipped_freq);
 
         ad9361_device_t::direction_t direction = _get_direction_from_antenna(which);
-        return _device.tunef(direction, value);
+        return _device.tunef(direction, value, set_filter_bank);
     }
 
 private:

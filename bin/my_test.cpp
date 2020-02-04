@@ -10,7 +10,12 @@ int main(int argc, char* argv[])
         mb_container_type tester;
         std::vector<boost::shared_ptr<pax::transport::sph::recv_packet_streamer> > streamers=pax_init(tester,8);
 
+//        tester.iface->poke32(U2_REG_SR_ADDR(104), 1<<0);// to_wb
+//        tester.fifo_ctrl->poke32(U2_REG_SR_ADDR(104), 1<<0);// sfc_without_wb
 
+//        while(1) std::cout << tester.fifo_ctrl->peek32(U2_REG_SR_ADDR(24)) << std::endl;
+
+//        std::cout <<1;
 
         //tester.filter_bank[4]->set_filter_path_simulator(1000e6, "RX", false);
         //std::cout << "ok!";
@@ -111,9 +116,9 @@ int main(int argc, char* argv[])
 
 
 
-        int which_9364 = 0;
-        long int freq = 500e6;
-        int gain = 65.5;
+        int which_9364 = 4;
+        long int freq = 5800e6;
+        int gain = 50;
 
 
         for (uint32_t i=0; i<(tester.N_AD9361 + tester.N_AD9364); i++){
@@ -133,6 +138,7 @@ int main(int argc, char* argv[])
 
         // enable clock from ad93611
         tester.iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0xff);
+
 
         std::cout<<"1";
 

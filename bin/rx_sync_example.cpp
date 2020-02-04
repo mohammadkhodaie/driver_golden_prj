@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
     (void)argc;
     (void) argv;
     mb_container_type tester;
-    vec_streamers_t streamers=pax_init(tester,2);
+    vec_streamers_t streamers=pax_init(tester,8);
 
 
     // disable clock from ad9361
@@ -44,11 +44,14 @@ int main(int argc, char* argv[])
 
     }
 
+    tester.iface->poke32(U2_REG_SR_ADDR(990), 0x01);
+    tester.iface->poke32(U2_REG_SR_ADDR(991), 0x01);
 
     // enable clock from ad9361
-    tester.iface->poke32(U2_REG_SR_ADDR(23), 0x01);
     tester.iface->poke32(U2_REG_SR_ADDR(24), 0x01);
-
+   /* tester.iface->poke32(U2_REG_SR_ADDR(25), 0x01);
+    tester.iface->poke32(U2_REG_SR_ADDR(26), 0x01);
+*/
 streamers[1]->flush_all();
     pax::rx_metadata_t md;
     int num_requested_samples=65536;//10000;    /// PH
@@ -66,20 +69,21 @@ streamers[1]->flush_all();
     //tester.rx_dsps[0]->issue_stream_command(stream_cmd);
 
 
-    //for (size_t i=0; i<2; i++)
-        tester.rx_dsps[1]->issue_stream_command(stream_cmd);
 
+
+//    for (size_t i=0; i<1; i++)
+        tester.rx_dsps[1]->issue_stream_command(stream_cmd);
 
 
     uint32_t num_of_samples = 65536;
     tester.iface->poke32(U2_REG_SR_ADDR(91), num_of_samples);
     //tester.iface->poke32(U2_REG_SR_ADDR(990), 5);
     tester.iface->poke32(U2_REG_SR_ADDR(92), 0x012345678);
-    tester.iface->poke32(U2_REG_SR_ADDR(94), 0x3);
+    tester.iface->poke32(U2_REG_SR_ADDR(94), 0x6);
 
-    tester.iface->poke32(U2_REG_SR_ADDR(90), 0x0);
-    tester.iface->poke32(U2_REG_SR_ADDR(93), 0x1);
-    tester.iface->poke32(U2_REG_SR_ADDR(93), 0x0);
+//    tester.iface->poke32(U2_REG_SR_ADDR(90), 0x0);
+//    tester.iface->poke32(U2_REG_SR_ADDR(93), 0x1);
+//    tester.iface->poke32(U2_REG_SR_ADDR(93), 0x0);
 
     int counter = 0;
     size_t total = 0;
@@ -89,21 +93,24 @@ streamers[1]->flush_all();
 
 
     while(true){
+//        tester.iface->poke32(U2_REG_SR_ADDR(24), 0x01);
+
+
         tester.iface->poke32(U2_REG_SR_ADDR(90), 0x1);
 
 
         total = streamers[1]->recv(&buffs, num_of_samples + 3, md, 1, false);
-        if((total != num_of_samples + 3) || buffs.header != 0xaaaaaaaa){
-            std::cout << "Loss!  ";
-            tester.iface->poke32(U2_REG_SR_ADDR(93), 0x1);
-            tester.iface->poke32(U2_REG_SR_ADDR(93), 0x0);
-            streamers[1]->recv(&buffs, sizeof(buffs), md, 0.1, false);
-            continue;
-        }
+//        if((total != num_of_samples + 3) || buffs.header != 0xaaaaaaaa){
+//            std::cout << "Loss!  ";
+//            tester.iface->poke32(U2_REG_SR_ADDR(93), 0x1);
+//            tester.iface->poke32(U2_REG_SR_ADDR(93), 0x0);
+//            streamers[1]->recv(&buffs, sizeof(buffs), md, 0.1, false);
+//            continue;
+//        }
 
-
-        std::cout <<std::hex<< buffs.header <<"    "<<std::hex<< buffs.num_sample<<"    " <<std::hex<< buffs.task_id ;
-        std::cout << std::endl <<total<<"    "<<counter++ << std::endl;
+//        if(total != num_of_samples + 3) std::cout << "Er:" << total << "           " << counter++ << std::endl;
+        std::cout <<std::hex<< buffs.header <<"    "<<std::hex<< buffs.num_sample<<"    " <<std::hex<< buffs.task_id << std::endl ;
+//        std::cout << std::endl <<total<<"    "<<counter++ << std::endl;
     }
 
 

@@ -9,12 +9,17 @@ int main(int argc, char* argv[])
     (void) argv;
 
     mb_container_type tester;
-    vec_streamers_t streamers=pax_init(tester,8);
+    vec_streamers_t streamers=pax_init(tester,2);
 
+
+//    pax::flash_vec_t temp, temp1;
+//    temp=tester.iface->read_uid_flash();
 
     // disable clock from ad9361
     tester.iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0x0);
-
+    //
+//    int a;
+//    while(1) a = tester.fifo_ctrl->peek32(READBACK_BASE + 4*2);
 
 
     double ADSampleRate;
@@ -31,10 +36,22 @@ int main(int argc, char* argv[])
 
     }
 
+    tester.ad_9361[0]->tune("TX",100e6);
+    tester.ad_9361[0]->tune("TX",200e6);
+    tester.ad_9361[0]->tune("TX",300e6);
+    tester.ad_9361[0]->tune("TX",500e6);
 
     // enable clock from ad9361
     tester.iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0xFF);
 
+//    int w=0;
+//    while(1){
+//        w++;
+//        ADSampleRate=tester.ad_9361[0]->set_clock_rate(w*1e6);
+//        if(w>60)
+//            w=5;
+
+//    }
 
     //tester.sync->PAX8V7_rx_cal_mode(false);
     //tester.sync->do_mcs();
@@ -44,7 +61,7 @@ int main(int argc, char* argv[])
     for (size_t i=0; i<streamers.size(); i++){
         tester.rx_dsps[i]->set_tick_rate(ADSampleRate);
         tester.rx_dsps[i]->set_link_rate(ADSampleRate);
-        tester.rx_dsps[i]->set_host_rate(1e6);
+        tester.rx_dsps[i]->set_host_rate(7e6);
         tester.rx_dsps[i]->set_freq(-5e6);
     }
 
@@ -82,14 +99,14 @@ int main(int argc, char* argv[])
 
     //tester.rx_dsps[0]->issue_stream_command(stream_cmd);
     //tester.ad_9361[0]->set_clk_mux_parent(1);
-    for (size_t i=0; i<8; i++)
+    for (size_t i=0; i<2; i++)
         tester.rx_dsps[i]->issue_stream_command(stream_cmd);
 
     std::vector<boost::thread*> runners(streamers.size());
     std::vector<recorder::sptr> recorders(streamers.size());
 
-    for (size_t i=0; i<8 ;i++){
-        recorders[i]=recorder::make(streamers[i],i,200000);
+    for (size_t i=0; i<2 ;i++){
+        recorders[i]=recorder::make(streamers[i],i, tester,200000);
         runners[i]=new boost::thread(boost::bind(&recorder::run,recorders[i]));
 
     }

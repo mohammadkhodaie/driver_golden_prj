@@ -331,6 +331,7 @@ void pax::filter_bank_impl::simulator_filter_bank_init(){
 
 void pax::filter_bank_impl::set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_30_6000MHz::sub_flt in){
     std::vector<uint8_t> vec = {0x3, 0x0, 0x1, 0x2, 0xc, 0x8, 0x4};
+    uint8_t last = sim_flt_status.GPOA_CTRL_SW_RX;
 
     switch (which_ad9361_ic) {
     case 1:
@@ -346,31 +347,38 @@ void pax::filter_bank_impl::set_sub_filter_path_simulator(pax::filter_bank::filt
     default:
         break;
     }
-
+    if(last == sim_flt_status.GPOA_CTRL_SW_RX)
+        return;
     spi_iface->write_spi((1 << 10), conf, ((1 << 6) << 16) | (0x12 << 8) | sim_flt_status.GPOA_CTRL_SW_RX, 24);
 }
 
 void pax::filter_bank_impl::set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_100_1000MHz::sub_flt in){
     std::vector<uint8_t> vec = {0x0, 0x1, 0x2, 0x3};
+    uint8_t last = sim_flt_status.GPOB_CTRL_SW_TX;
     sim_flt_status.GPOB_CTRL_SW_TX &= 0xf3;
     sim_flt_status.GPOB_CTRL_SW_TX |= vec[static_cast<int>(in)] << 2;
-
+    if(last == sim_flt_status.GPOB_CTRL_SW_TX)
+        return;
     spi_iface->write_spi((1 << 11), conf, ((1 << 6) << 16) | (0x13 << 8) | sim_flt_status.GPOB_CTRL_SW_TX, 24);
 }
 
 void pax::filter_bank_impl::set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_500_2500MHz::sub_flt in){
     std::vector<uint8_t> vec = {0x2, 0x1};
+    uint8_t last = sim_flt_status.GPOB_CTRL_SW_TX;
     sim_flt_status.GPOB_CTRL_SW_TX &= 0xfc;
     sim_flt_status.GPOB_CTRL_SW_TX |= vec[static_cast<int>(in)] << 0;
-
+    if(last == sim_flt_status.GPOB_CTRL_SW_TX)
+        return;
     spi_iface->write_spi((1 << 11), conf, ((1 << 6) << 16) | (0x13 << 8) | sim_flt_status.GPOB_CTRL_SW_TX, 24);
 }
 
 void pax::filter_bank_impl::set_sub_filter_path_simulator(pax::filter_bank::filter_bank_sim_value::FILTER_PATH_2000_6000MHz::sub_flt in){
     std::vector<uint8_t> vec = {0x1, 0x2};
+    uint8_t last = sim_flt_status.GPOB_CTRL_SW_TX;
     sim_flt_status.GPOB_CTRL_SW_TX &= 0xcf;
     sim_flt_status.GPOB_CTRL_SW_TX |= vec[static_cast<int>(in)] << 4;
-
+    if(last == sim_flt_status.GPOB_CTRL_SW_TX)
+        return;
     spi_iface->write_spi((1 << 11), conf, ((1 << 6) << 16) | (0x13 << 8) | sim_flt_status.GPOB_CTRL_SW_TX, 24);
 }
 

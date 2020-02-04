@@ -187,7 +187,7 @@ public:
     virtual void do_mcs(boost::uint32_t step) = 0;
 
     //! fast tune the given frontend
-    virtual double tunef(const std::string &which, const double value) = 0;
+    virtual double tunef(const std::string &which, const double value, bool set_filter_bank) = 0;
 
     //! GPO manual set
     virtual void GPO_manual_set(uint8_t GPO_channel,bool set_valu) = 0;

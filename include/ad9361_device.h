@@ -190,7 +190,7 @@ public:
      * After tuning, it does not run any calibration.
      * SBM
      * */
-    double tunef(direction_t direction, const double value);
+    double tunef(direction_t direction, const double value, bool set_filter_bank);
 
 
     void set_gpo(uint8_t GPO_channel, bool set_valu);

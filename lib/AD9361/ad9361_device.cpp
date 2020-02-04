@@ -3262,10 +3262,10 @@ void ad9361_device_t::do_mcs(boost::uint32_t step)
  * internal tune function.
  *
  * After tuning, it does not run any calibration. */
-double ad9361_device_t::tunef(direction_t direction, const double value)
+double ad9361_device_t::tunef(direction_t direction, const double value, bool set_filter_bank)
 {
     boost::lock_guard<boost::recursive_mutex> lock(_mutex);
-    double tune_freq = _tune_helper(direction, value, which_ad9361);
+    double tune_freq = _tune_helper(direction, value, set_filter_bank);
     /* If we were in the FDD state, return it now. */
         _io_iface->poke8(0x014, 0x21);
     return tune_freq;

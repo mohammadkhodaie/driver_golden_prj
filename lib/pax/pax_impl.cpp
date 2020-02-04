@@ -27,13 +27,16 @@ void pax::usrp::pax_ad9361_client_t::set_filter_bank(double freq, std::string di
 
     #ifdef __HAND_OFF__
     case pax2s6:
+        if(direction == "RX")
             flt->set_filter_path_hand_off(freq,false);
         break;
     #endif
     case pax2_9361_filter_bank:
+        if(direction == "RX")
             flt->set_filter_path_sky_v2(freq,false); // PH
         break;
     case pax8v7_9361_filter_bank:
+        if(direction == "RX")
             flt->set_filter_path_virtex(freq,false);
         break;
     case pax8_gnss_8ch_monitoring:

@@ -147,10 +147,11 @@ public:
            }
         }
 
-       //vAD9361[2]->set_gain("TX1",0);
+        vAD9361[2]->set_gain("TX1",0);
+        vAD9361[2]->set_gain("TX2",0);
        PAX8K7_rx_cal_mode(false);
        _wb_iface->poke32(U2_REG_SR_ADDR(255),0x00);
-       vAD9361[2]->set_active_chains(false,false,true,true);
+       //vAD9361[2]->set_active_chains(false,false,true,true);
        return out_value;
     }
 
@@ -166,8 +167,9 @@ public:
         if(vAD9361.empty()==true)
             return out_value;
 
+
         for(uint8_t j = 0; j < filter.size(); j++)
-            filter[j]->set_filter_path_virtex(_TEST_FREQ,true);// PH
+            filter[j]->set_filter_path_virtex(_TEST_FREQ,false);// PH
 
         init_for_calibration_PAX8V7(_TEST_FREQ,SAMPLE_RATE,test_mode);
 
@@ -233,8 +235,9 @@ public:
 
         PAX8V7_rx_cal_mode(false);
         _wb_iface->poke32(U2_REG_SR_ADDR(255),0x00);
-        vAD9361[1]->set_active_chains(false,false,true,true);
-
+        //vAD9361[1]->set_active_chains(false,false,true,true);
+        vAD9361[1]->set_gain("TX1", 0);
+        vAD9361[1]->set_gain("TX2", 0);
 
 
 
@@ -242,6 +245,13 @@ public:
 
     }
 
+    double read_phase_loc_ant(int channel){
+        tx_sw_ch_for_cal_pax8(channel);
+        double I_delay,Q_delay, teta;
+        read_I_Q_CIC_GNS(I_delay,Q_delay);
+        teta=std::atan2(Q_delay,I_delay);
+        return teta * 180.0 / pi;
+    }
 
     bool GNS_calibration(double _TEST_FREQ = 1575e6 ,double SAMPLE_RATE = 32e6,bool test_mode = false){
         if(vAD9361.empty()==true)
@@ -364,7 +374,7 @@ private:
         _wb_iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0xFF);
         // setup dds
           _wb_iface->poke32(U2_REG_SR_ADDR(980),1);
-          _wb_iface->poke32(U2_REG_SR_ADDR(981),(0x01ff<<16)|0x01ff); // scale_0
+          _wb_iface->poke32(U2_REG_SR_ADDR(981),(0x03ff<<16)|0x03ff); // scale_0
           _wb_iface->poke32(U2_REG_SR_ADDR(982),((0x0) <<16)|(0xffff>>2)); // phase_0
           _wb_iface->poke32(U2_REG_SR_ADDR(983),((32768>>5)<<16)|32768>>5); // incr_0
 //             //_wb_iface->poke32(U2_REG_SR_ADDR(983),((0>>6)<<16)|0>>6); // incr_0
@@ -643,7 +653,7 @@ protected:
     const double gns_accurecy_of_phase_calibration_degree = 0.5;
     double pax8_accurecy_of_phase_calibration_degree = 2;// 0.5
 
-    const double pi = 3.14;
+    const double pi = 3.1415;
     const double _degree_180 = 180;
     /***********************************************************************
      * Private variables

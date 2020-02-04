@@ -105,6 +105,8 @@ std::vector<pax::transport::if_addrs_t> pax::transport::get_if_addrs(void) {
 
 
 
+
+
   device_addrs_t usrp2_find(const device_addr_t  &hint_){
     //handle the multi-device discovery
     device_addrs_t hints = separate_device_addr(hint_);
@@ -194,15 +196,9 @@ std::vector<pax::transport::if_addrs_t> pax::transport::get_if_addrs(void) {
             //make a boost asio ipv4 with the raw addr in host byte order
             device_addr_t new_addr;
             new_addr["type"] = "usrp2";
-            //We used to get the address from the control packet.
-            //Now now uses the socket itself to yield the address.
-            //boost::asio::ip::address_v4 ip_addr(ntohl(ctrl_data_in->data.ip_addr));
-            //new_addr["addr"] = ip_addr.to_string();
+
             new_addr["addr"] = udp_transport->get_recv_addr();
 
-            //Attempt a simple 2-way communication with a connected socket.
-            //Reason: Although the USRP will respond the broadcast above,
-            //we may not be able to communicate directly (non-broadcast).
             pax::transport::udp_simple::sptr ctrl_xport = pax::transport::udp_simple::make_connected(
                 new_addr["addr"], BOOST_STRINGIZE(USRP2_UDP_CTRL_PORT)
             );
@@ -217,23 +213,7 @@ std::vector<pax::transport::if_addrs_t> pax::transport::get_if_addrs(void) {
             }
 
 
-            // commented by parto
-            /// fix it
-//            try{
-               //usrp2_iface::sptr iface = usrp2_iface::make(ctrl_xport);
-//                if (iface->is_device_locked()) continue; //ignore locked devices
-//                mboard_eeprom_t mb_eeprom = iface->mb_eeprom;
-//                new_addr["name"] = mb_eeprom["name"];
-//                new_addr["serial"] = mb_eeprom["serial"];
-//            }
-//            catch(const std::exception &){
-//                //set these values as empty string so the device may still be found
-//                //and the filter's below can still operate on the discovered device
-//                new_addr["name"] = "";
-//                new_addr["serial"] = "";
-//            }
 
-            //filter the discovered device below by matching optional keys
             if (
                 (not hint.has_key("name")   or hint["name"]   == new_addr["name"]) and
                 (not hint.has_key("serial") or hint["serial"] == new_addr["serial"])
@@ -249,6 +229,8 @@ std::vector<pax::transport::if_addrs_t> pax::transport::get_if_addrs(void) {
 
     return usrp2_addrs;
 }
+
+
 
 
 
