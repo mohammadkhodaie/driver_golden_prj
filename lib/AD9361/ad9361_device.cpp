@@ -2380,6 +2380,27 @@ double ad9361_device_t::tune(direction_t direction, const double value, bool set
 
     return tune_freq;
 }
+//////////GARMIN
+
+void ad9361_device_t::set_tx_demux(char sel){
+    switch (sel) {
+    case 'a':
+    case 'A':
+        _regs.inputsel = _regs.inputsel & ~(1<<6);
+        _io_iface->poke8(0x004 , _regs.inputsel);
+        break;
+    case 'b':
+    case 'B':
+        _regs.inputsel = _regs.inputsel | (1<<6);
+        _io_iface->poke8(0x004 , _regs.inputsel);
+        break;
+    default:
+        break;
+    }
+}
+
+
+//////////GARMIN
 
 void ad9361_device_t::set_filter_bank(boost::shared_ptr<filter_bank> flt){ // PH
     _client_params->set_filter_bank(flt);

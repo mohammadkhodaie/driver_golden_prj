@@ -125,6 +125,7 @@ public:
 
     //! tune the given frontend, return the exact value
     virtual double tune(const std::string &which, const double value, bool set_filter_bank = true) = 0;
+    virtual void set_tx_demux(char sel) = 0;
 
     //! set the DC offset for I and Q manually
     void set_dc_offset(const std::string &, const std::complex<double>)

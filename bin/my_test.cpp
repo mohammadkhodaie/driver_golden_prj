@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
         mb_container_type tester;
         std::vector<boost::shared_ptr<pax::transport::sph::recv_packet_streamer> > streamers=pax_init(tester,8);
 
-//        tester.iface->poke32(U2_REG_SR_ADDR(104), 1<<0);// to_wb
+ //       tester.iface->poke32(U2_REG_SR_ADDR(104), 1<<0);// to_wb
 //        tester.fifo_ctrl->poke32(U2_REG_SR_ADDR(104), 1<<0);// sfc_without_wb
 
 //        while(1) std::cout << tester.fifo_ctrl->peek32(U2_REG_SR_ADDR(24)) << std::endl;

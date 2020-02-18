@@ -7,10 +7,10 @@ int main(int argc, char* argv[])
     (void) argv;
 
     mb_container_type tester;
-    std::vector<boost::shared_ptr<pax::transport::sph::recv_packet_streamer> > streamers=pax_init(tester,4);
+    std::vector<boost::shared_ptr<pax::transport::sph::recv_packet_streamer> > streamers=pax_init(tester,2);
 
-#define _AD9361 0
-#define _TEST_FREQ (1000e6)
+#define _AD9361 1
+#define _TEST_FREQ (250e6)
     // disable clock from ad9361
     tester.iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0x0);
 
@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
         boost::this_thread::sleep(boost::posix_time::seconds(2));
 
 
-    tester.iface->poke32(U2_REG_SR_ADDR(SR_RX_SW),3);
+    //tester.iface->poke32(U2_REG_SR_ADDR(SR_RX_SW),3);
 
     std::vector<boost::uint32_t> dd(10000,0);
     std::complex<int16_t> *buffer = (std::complex<int16_t>*)malloc(10000*sizeof(std::complex<int16_t>));
@@ -77,17 +77,18 @@ int main(int argc, char* argv[])
     tester.time64->set_tick_rate(DSP_CLOCK_RATE);
     tester.time64->set_time_now(pax::time_spec_t(0.0f));
 
-    tester.ad_9361[0]->set_iq_balance_auto("RX",true);
+    tester.ad_9361[_AD9361]->set_iq_balance_auto("RX",true);
 
 
-    tester.tx_streamers[0]->set_tick_rate(DSP_CLOCK_RATE);
+    tester.tx_streamers[_AD9361]->set_tick_rate(DSP_CLOCK_RATE);
     pax::tx_metadata_t  md;
     md.start_of_burst = true;
         md.end_of_burst   = false;
         md.has_time_spec  = true;
         md.time_spec = pax::time_spec_t(.10f); //give us 0.1 seconds to fill the tx buffers
     while(1){
-        tester.tx_streamers[0]->send(buffer,10000,md,3);
+        tester.ad_9361[_AD9361]->set_tx_demux('B');
+        tester.tx_streamers[_AD9361]->send(buffer,10000,md,3);
 //       pax::transport::sph::send_packet_streamer::send()
         md.end_of_burst   = false;
         md.start_of_burst = false;

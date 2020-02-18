@@ -200,6 +200,10 @@ public:
         return _device.tune(direction, value, set_filter_bank);
     }
 
+    void set_tx_demux(char sel){
+        _device.set_tx_demux(sel);
+    }
+
 
     void set_filter_bank(boost::shared_ptr<filter_bank> flt){ // PH
         _device.set_filter_bank(flt);
