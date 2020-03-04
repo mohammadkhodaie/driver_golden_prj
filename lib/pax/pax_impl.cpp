@@ -842,6 +842,16 @@ uint32_t set_daughter_board(mb_container_type& tester){
     pax::eeprom::sptr db = pax::eeprom::make(tester.iface);
     std::string eeprom_value = db->info.product_name;
 
+    std::string _ad_ref_clk  = db->info.ad_ref_clk;
+    if(_ad_ref_clk == "20"){
+        tester.ad_ref_clk = pax::usrp::_20MHz;
+    }
+    else{
+        tester.ad_ref_clk = pax::usrp::_40MHz;
+    }
+
+
+
     if(eeprom_value=="Analog")
     {
         tester.daughter_b=pax::usrp::Analog;
@@ -946,7 +956,7 @@ void init_ad9361(mb_container_type& tester,uint32_t N_AD9361){
         client_settings->set_mb(tester.board);
         client_settings->set_interface(tester.iface);
 
-        tester.ad_9361.push_back( pax::usrp::ad9361_ctrl::make_spi(client_settings,tester.spi_and_wb_iface, 1<<i, i, _adf4351));
+        tester.ad_9361.push_back( pax::usrp::ad9361_ctrl::make_spi(client_settings,tester.spi_and_wb_iface, 1<<i, i, _adf4351, tester.ad_ref_clk));
     }
 }
 

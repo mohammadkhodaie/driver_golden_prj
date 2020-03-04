@@ -192,6 +192,7 @@ struct mb_container_type{
     pax::usrp::daughter_t daughter_b;
     uint32_t N_AD9361;
     uint32_t N_AD9364;
+    pax::usrp::ad_ref_clk_t ad_ref_clk;
     //usrp2_clock_ctrl::sptr clock;
     //usrp2_codec_ctrl::sptr codec;
     //pax::gps_ctrl::sptr gps;

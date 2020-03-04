@@ -122,8 +122,8 @@ private:
 class ad9361_ctrl_impl : public ad9361_ctrl
 {
 public:
-    ad9361_ctrl_impl(ad9361_params::sptr client_settings, ad9361_io::sptr io_iface, int SW, adf4351::sptr ext_synth):
-        _device(client_settings, io_iface, SW, ext_synth)
+    ad9361_ctrl_impl(ad9361_params::sptr client_settings, ad9361_io::sptr io_iface, int SW, adf4351::sptr ext_synth, ad_ref_clk_t ad_ref_clk):
+        _device(client_settings, io_iface, SW, ext_synth, ad_ref_clk)
     {
         _device.initialize(ad9361_device_t::INTERNAL_LO);
     }
@@ -399,8 +399,8 @@ private:
 //----------------------------------------------------------------------
 // Make an instance of the AD9361 Control interface
 //----------------------------------------------------------------------
-ad9361_ctrl::sptr ad9361_ctrl::make_spi(ad9361_params::sptr client_settings, spi_wb_iface::sptr spi_iface, boost::uint32_t slave_num, int SW, adf4351::sptr ext_synth)
+ad9361_ctrl::sptr ad9361_ctrl::make_spi(ad9361_params::sptr client_settings, spi_wb_iface::sptr spi_iface, boost::uint32_t slave_num, int SW, adf4351::sptr ext_synth, ad_ref_clk_t ad_ref_clk)
 {
     boost::shared_ptr<ad9361_io_spi> spi_io_iface = boost::make_shared<ad9361_io_spi>(spi_iface, slave_num);
-    return sptr(new ad9361_ctrl_impl(client_settings, spi_io_iface, SW, ext_synth));
+    return sptr(new ad9361_ctrl_impl(client_settings, spi_io_iface, SW, ext_synth, ad_ref_clk));
 }

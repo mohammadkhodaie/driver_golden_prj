@@ -25,14 +25,14 @@ boost::cnv::cstream ccnv;
 
 
     mac.set_addr("00:50:C2:85:3F:FF");ip.set_addr("192.168.10.3");
-    std::string board_type("PAX2S6-rev.1.0");       // "PAX2.D-rev.0.1"   "PAXGNS-rev.0.0"
+    std::string board_type("8K410T-rev.1.0");       // "PAX2.D-rev.0.1"   "PAXGNS-rev.0.0"
                                                     // "PAX2S6-rev.0.0" "PAX2S6-rev.1.0"
                                                     // "8K410T-rev.1.0" "PAX8V7-rev.1.0"
 
 
 
-    std::string serial_daughter("955015");    //512020               // 057058 /////6dig
-    std::string serial_mother=(std::string("S/N : ")+"955015"); //A095011 /////6dig
+    std::string serial_daughter("A19003");    //512020               // 057058 /////6dig
+    std::string serial_mother=(std::string("S/N : ")+"A19003"); //A095011 /////6dig
 
 
     pax::eeprom::sptr db=pax::eeprom::make(tester.iface);
@@ -46,6 +46,9 @@ boost::cnv::cstream ccnv;
     info.product_name.assign("PAXGNS8 Monitorin");          //"PAX2S6 Analog Kit"  "PAXGNS8 Monitorin"
                                                             //"PAXGNS Analog Kit"  "PAXGNS Analog CAL"
                                                             //"PAX2K7 FILTERBANK"  "PAX8V7 FILTERBANK"
+
+    info.ad_ref_clk.assign("40");                           // 40 20 -------- just for sim
+
     info.serial.assign(serial_daughter);                     //config
     db->set_info(info);
     db->write_info();

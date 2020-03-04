@@ -36,10 +36,10 @@ int main(int argc, char* argv[])
 
     }
 
-    tester.ad_9361[0]->tune("TX",100e6);
-    tester.ad_9361[0]->tune("TX",200e6);
-    tester.ad_9361[0]->tune("TX",300e6);
-    tester.ad_9361[0]->tune("TX",500e6);
+//    tester.ad_9361[0]->tune("TX",100e6);
+//    tester.ad_9361[0]->tune("TX",200e6);
+//    tester.ad_9361[0]->tune("TX",300e6);
+//    tester.ad_9361[0]->tune("TX",500e6);
 
     // enable clock from ad9361
     tester.iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0xFF);

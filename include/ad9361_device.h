@@ -42,8 +42,8 @@ public:
     enum chain_t { CHAIN_1, CHAIN_2, CHAIN_BOTH };
     enum lo_mode_t {INTERNAL_LO = 0, EXTERNAL_LO = 1};
 
-    ad9361_device_t(ad9361_params::sptr client, ad9361_io::sptr io_iface, uint8_t which_ad9361, adf4351::sptr ext_synth) :
-        _client_params(client), _io_iface(io_iface), which_ad9361(which_ad9361), _ext_synth(ext_synth) {
+    ad9361_device_t(ad9361_params::sptr client, ad9361_io::sptr io_iface, uint8_t which_ad9361, adf4351::sptr ext_synth, ad_ref_clk_t ad_ref_clk):
+        _client_params(client), _io_iface(io_iface), which_ad9361(which_ad9361), _ext_synth(ext_synth) , _ad_ref_clk(ad_ref_clk){
 
         /*
          * This Boost.Assign to_container() workaround is necessary because STL containers
@@ -294,7 +294,7 @@ private:    //Members
     ad9361_io::sptr     _io_iface;
     uint8_t which_ad9361;
     adf4351::sptr _ext_synth;
-
+    ad_ref_clk_t _ad_ref_clk;
     //Intermediate state
     double              _rx_freq, _tx_freq, _req_rx_freq, _req_tx_freq;
     double              _last_rx_cal_freq, _last_tx_cal_freq;

@@ -1229,7 +1229,7 @@ double ad9361_device_t::_tune_bbvco(const double rate)
 
     _req_coreclk = rate;
 
-    const double fref = 40.0000e6;
+    const double fref = _ad_ref_clk * 1e6;/////PH 40e6
     const int modulus = 2088960;
     const double vcomax = 1430e6;
     const double vcomin = 672e6;
@@ -1498,7 +1498,7 @@ double ad9361_device_t::_tune_helper(direction_t direction, const double value, 
 double ad9361_device_t::_tune_helper_int(direction_t direction, const double value, bool set_filter_bank)
 {
     /* The RFPLL runs from 6 GHz - 12 GHz */
-    const double fref = 80e6;
+    const double fref = _ad_ref_clk * 1e6 * 2;/////PH 80e6
     const int modulus = 8388593;
     const double vcomax = 12e9;
     const double vcomin = 6e9;

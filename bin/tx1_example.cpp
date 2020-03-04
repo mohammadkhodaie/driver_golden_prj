@@ -9,21 +9,21 @@ int main(int argc, char* argv[])
     mb_container_type tester;
     std::vector<boost::shared_ptr<pax::transport::sph::recv_packet_streamer> > streamers=pax_init(tester,2);
 
-#define _AD9361 1
-#define _TEST_FREQ (250e6)
+#define _AD9361 0
+#define _TEST_FREQ (500e6)
     // disable clock from ad9361
     tester.iface->poke32(U2_REG_SR_ADDR(SR_ADC_CLK_EN), 0x0);
 
     double ADSampleRate;
 
         for (uint32_t i=0; i<(tester.N_AD9361 + tester.N_AD9364); i++){
-            tester.ad_9361[i]->set_active_chains(true,true,false,false);
+            tester.ad_9361[i]->set_active_chains(true,false,false,false);
 
             tester.ad_9361[i]->tune("TX",_TEST_FREQ);
-            tester.ad_9361[i]->set_gain("TX1",85);
-            tester.ad_9361[i]->set_gain("TX2",85);
-            ADSampleRate=tester.ad_9361[i]->set_clock_rate(7e6);
-            ADSampleRate=tester.ad_9361[i]->set_clock_rate(40e6);
+            tester.ad_9361[i]->set_gain("TX1",89);
+           // tester.ad_9361[i]->set_gain("TX2",85);
+//            ADSampleRate=tester.ad_9361[i]->set_clock_rate(7e6);
+            ADSampleRate=tester.ad_9361[i]->set_clock_rate(50e6);
     //          tester.ad_9361[i]->swap_iq("TX",true);
             tester.ad_9361[i]->output_digital_test_tone(true);
         }
@@ -86,6 +86,7 @@ int main(int argc, char* argv[])
         md.end_of_burst   = false;
         md.has_time_spec  = true;
         md.time_spec = pax::time_spec_t(.10f); //give us 0.1 seconds to fill the tx buffers
+//        tester.ad_9361[_AD9361]->set_tx_demux('A');
     while(1){
         tester.ad_9361[_AD9361]->set_tx_demux('B');
         tester.tx_streamers[_AD9361]->send(buffer,10000,md,3);

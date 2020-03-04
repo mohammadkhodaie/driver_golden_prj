@@ -487,6 +487,26 @@ void pax::filter_bank_impl::set_rx_path_throw_outside_flt(bool throw_outside_amp
 }
 
 void pax::filter_bank_impl::do_rx_attenuation(uint8_t value){
+#ifdef __HAND_OFF__
+    if(value > 31)
+        value = 31;
+
+    value = value << 1;
+    value ^= 0x3f;
+    switch (which_ad9361_ic) {
+    case 0:
+        spi_iface->write_spi((1 << 2), conf, value, 6);
+        break;
+    case 1:
+        spi_iface->write_spi((1 << 3), conf, value, 6);
+        break;
+    default:
+        break;
+    }
+
+#else
+
+
     if(value > 45)
         value = 45;
 
@@ -504,5 +524,7 @@ void pax::filter_bank_impl::do_rx_attenuation(uint8_t value){
     default:
         break;
     }
+
+#endif
 }
 

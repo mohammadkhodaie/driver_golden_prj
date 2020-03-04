@@ -84,6 +84,10 @@ typedef enum {
     NULL_B
 } daughter_t;
 
+typedef enum {
+    _20MHz = 20,
+    _40MHz = 40
+}ad_ref_clk_t;
 
 typedef enum {
     pax8_D_K325T,

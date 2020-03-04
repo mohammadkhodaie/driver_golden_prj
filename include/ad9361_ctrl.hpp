@@ -66,7 +66,7 @@ public:
     virtual ~ad9361_ctrl(void) {}
 
     //! make a new codec control object
-    static sptr make_spi(ad9361_params::sptr client_settings, spi_wb_iface::sptr spi_iface, boost::uint32_t slave_num, int SW, adf4351::sptr ext_synth);
+    static sptr make_spi(ad9361_params::sptr client_settings, spi_wb_iface::sptr spi_iface, boost::uint32_t slave_num, int SW, adf4351::sptr ext_synth, ad_ref_clk_t ad_ref_clk);
 
     //! Get a list of gain names for RX or TX
     static std::vector<std::string> get_gain_names(const std::string &/*which*/)

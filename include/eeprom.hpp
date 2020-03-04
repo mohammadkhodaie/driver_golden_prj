@@ -50,6 +50,7 @@ public:
         std::string serial;
         std::string part;
         boost::gregorian::date product_date;
+        std::string ad_ref_clk;
     } board_info;
     board_info info;
 
