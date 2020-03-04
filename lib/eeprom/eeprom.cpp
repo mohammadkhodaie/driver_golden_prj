@@ -26,11 +26,14 @@ void  pax::eeprom_imple::set_info(const board_info &binfo){
     info.part.resize(binfo.part.size());
     info.product_name.resize(binfo.product_name.size());
     info.serial.resize(binfo.serial.size());
+    info.ad_ref_clk.resize(binfo.ad_ref_clk.size());
 
     std::copy(binfo.board_mfg.begin(),binfo.board_mfg.end(),info.board_mfg.begin());
     std::copy(binfo.part.begin(),binfo.part.end(),info.part.begin());
     std::copy(binfo.product_name.begin(),binfo.product_name.end(),info.product_name.begin());
     std::copy(binfo.serial.begin(),binfo.serial.end(),info.serial.begin());
+    std::copy(binfo.ad_ref_clk.begin(),binfo.ad_ref_clk.end(),info.ad_ref_clk.begin());
+
     //NOTE: Date is not copied, analyze_write will set it
     analyze_write();
 }
@@ -85,6 +88,14 @@ void pax::eeprom_imple::analyze()
     offset++;
     info.part.resize(len);
     std::copy(buff.begin()+offset,buff.begin()+len+offset,info.part.begin());
+
+    //////////PH
+    len=buff[offset]&0x3f;
+    offset++;
+    info.ad_ref_clk.resize(len);
+    std::copy(buff.begin()+offset,buff.begin()+len+offset,info.ad_ref_clk.begin());
+    //////////PH
+
     return;
 }
 
@@ -130,7 +141,19 @@ void pax::eeprom_imple::analyze_write()
     buff[offset]=info.part.size()|0xC0;
     offset++;
     std::copy(info.part.begin(),info.part.end(),buff.begin()+offset);
+
     offset=offset+info.part.size();
+
+    //////////PH
+    buff[offset]=info.ad_ref_clk.size()|0xC0;
+    offset++;
+    std::copy(info.ad_ref_clk.begin(),info.ad_ref_clk.end(),buff.begin()+offset);
+
+
+
+    offset=offset+info.ad_ref_clk.size();
+    //////////PH
+
     buff[offset]=0xc0;
     buff[offset+1]=0xc1;
     buff[9]=(offset+3-8+7)/8;
