@@ -47,7 +47,7 @@ boost::cnv::cstream ccnv;
                                                             //"PAXGNS Analog Kit"  "PAXGNS Analog CAL"
                                                             //"PAX2K7 FILTERBANK"  "PAX8V7 FILTERBANK"
 
-    info.ad_ref_clk.assign("40");                           // 40 20 -------- just for sim
+    //info.ad_ref_clk.assign("40");                           // 40 20 ----default : 40---- just for sim
 
     info.serial.assign(serial_daughter);                     //config
     db->set_info(info);

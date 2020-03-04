@@ -90,6 +90,7 @@ void pax::eeprom_imple::analyze()
     std::copy(buff.begin()+offset,buff.begin()+len+offset,info.part.begin());
 
     //////////PH
+    offset=offset+len;
     len=buff[offset]&0x3f;
     offset++;
     info.ad_ref_clk.resize(len);
